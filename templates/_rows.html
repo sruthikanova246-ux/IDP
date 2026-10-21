@@ -1,0 +1,27 @@
+{% from "_macros.html" import verdict_badge, level_badge %}
+{# Shared table body for Dashboard and History. Thumbnails show the user's own uploads only. #}
+{% macro rows(records, actions=false) %}
+  {% set previewable = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/mpo'] %}
+  {% for r in records %}
+  <tr data-verdict="{{ r.ai_prediction if r.ai_status == 'ok' else 'unavailable' }}">
+    <td><div class="file-cell">
+      {% if r.mime_type in previewable %}<img class="thumb" src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="" loading="lazy">
+      {% else %}<span class="thumb" aria-hidden="true"></span>{% endif %}
+      <span><a href="{{ url_for('analysis', record_id=r.id) }}">{{ r.original_filename }}</a><span class="id">{{ r.id }}</span></span>
+    </div></td>
+    <td class="small mono muted nowrap">{{ (r.uploaded_at or '')[:16]|replace('T', ' ') }}</td>
+    <td>{{ verdict_badge(r.ai_status, r.ai_prediction) }}</td>
+    <td>{{ level_badge(r.summary_level) }}</td>
+    {% if actions %}
+    <td><div class="row nowrap">
+      <a class="btn btn-sm" href="{{ url_for('report', record_id=r.id) }}">Report</a>
+      <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-ghost" aria-label="Delete {{ r.original_filename }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+      </form>
+    </div></td>
+    {% endif %}
+  </tr>
+  {% endfor %}
+{% endmacro %}

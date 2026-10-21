@@ -1,111 +1,81 @@
 {% extends "base.html" %}
 {% block title %}Methodology{% endblock %}
 {% macro row(name, m) %}
-  <tr><td>{{ name }}</td><td class="num">{{ m.confusion.real.real }}/{{ m.n_real }} ({{ m.real_accuracy|pct }})</td>
-    <td class="num">{% if m.n_ai %}{{ m.confusion.ai.ai }}/{{ m.n_ai }} ({{ m.ai_accuracy|pct }}){% else %}—{% endif %}</td>
+  <tr><td>{{ name }}</td><td class="num">{{ m.confusion.real.real }}/{{ m.n_real }}</td>
+    <td class="num">{% if m.n_ai %}{{ m.confusion.ai.ai }}/{{ m.n_ai }}{% else %}—{% endif %}</td>
     <td class="num">{{ m.balanced_accuracy|pct if m.balanced_accuracy is not none else '—' }}</td>
-    <td class="num">{{ m.false_positive_rate|pct }}</td><td class="num">{{ m.inconclusive_share|pct }}</td></tr>
+    <td class="num">{{ m.false_positive_rate|pct }}</td></tr>
 {% endmacro %}
 {% block content %}
-<div class="narrow center">
-<div class="page-head"><div><h1>Methodology</h1>
-  <p>A preliminary, explainable assessment. No step can prove an image is real or fake.</p></div></div>
+<div class="narrow">
+<div class="page-head"><div><div class="eyebrow">Methodology</div><h1>How it works</h1>
+  <p class="sub">A preliminary assessment. Nothing here proves an image real or fake.</p></div></div>
 
-<h2 class="h3 gap-bottom">How this works</h2>
 <div class="accordion">
   <details>
-    <summary>1 · Validation and storage</summary>
-    <div class="body"><p class="small">Allowed extension, size limit, full decode by Pillow and a pixel limit. Files are stored under a random
-      name and never executed.</p></div>
+    <summary><span class="n">01</span><span class="t">Validation</span></summary>
+    <div class="body"><p>Allowed type, size limit and a full decode. Stored under a random name; never executed.</p></div>
   </details>
   <details>
-    <summary>2 · SHA-256 fingerprint</summary>
-    <div class="body"><p class="small">Computed over the exact bytes received, then re-checked on the stored copy each time the report opens.</p>
-      <p class="small muted">{{ custody_note }}</p></div>
+    <summary><span class="n">02</span><span class="t">SHA-256 fingerprint</span></summary>
+    <div class="body"><p>Hash of the exact bytes received, re-checked whenever the report opens.</p>
+      <p class="small">Starts at upload; does not prove the file's earlier history.</p></div>
   </details>
   <details>
-    <summary>3 · Metadata</summary>
-    <div class="body"><p class="small">EXIF, GPS, PNG/WEBP text chunks, ICC, and XMP/IPTC/C2PA markers. Missing metadata is reported as missing,
-      not as manipulation.</p></div>
+    <summary><span class="n">03</span><span class="t">Metadata</span></summary>
+    <div class="body"><p>EXIF, GPS, embedded text and C2PA/XMP markers. Missing metadata is not evidence of manipulation.</p></div>
   </details>
   <details>
-    <summary>4 · AI-image classifier <span class="meta">{{ model_status.model_id }}</span></summary>
+    <summary><span class="n">04</span><span class="t">AI detector</span><span class="meta">{{ model_status.model_id }}</span></summary>
     <div class="body">
       <dl class="kv">
-        <dt>Model</dt><dd>{{ model_status.display_name }}</dd>
-        <dt>Revision</dt><dd class="hash">{{ model_status.revision }}</dd>
-        <dt>Scores</dt><dd class="small">{% if model_status.output_mapping %}{{ model_status.output_mapping.description }}{% else %}AI-generated and real-image scores sum to 100%.{% endif %}</dd>
-        <dt>Verdict</dt><dd class="small">{{ model_status.decision_rule }}</dd>
-        <dt>Confidence</dt><dd class="small">{{ confidence_note }}</dd>
+        <dt>Revision</dt><dd class="mono small">{{ model_status.revision }}</dd>
+        <dt>Verdict</dt><dd>AI-generated score above 50% → Likely AI-generated.</dd>
+        <dt>Scores</dt><dd>Model outputs, not calibrated probabilities.</dd>
+        {% if model_status.license %}<dt>License</dt><dd>{{ model_status.license }}</dd>{% endif %}
       </dl>
-      <p class="small muted gap-top">If the model cannot run, the report says “AI analysis unavailable” and no score is stored.</p>
-      <ul class="list gap-top">{% for l in model_status.known_limitations %}<li class="small">{{ l }}</li>{% endfor %}</ul>
     </div>
   </details>
   <details>
-    <summary>5 · Heuristic caution score</summary>
-    <div class="body"><p class="small">A transparent sum of rule weights (capped at 100). Not a probability, and never combined with the AI score.
-      ELA (JPEG only) is a visual aid and is not scored.</p>
+    <summary><span class="n">05</span><span class="t">Heuristics</span><span class="meta">caution score</span></summary>
+    <div class="body"><p>Sum of rule weights, capped at 100. Not a probability; never combined with the AI score.</p>
       <div class="table-wrap"><table class="table-compact"><thead><tr><th>Rule</th><th>Weight</th></tr></thead>
-        <tbody>{% for k, v in weights.items() %}<tr><td>{{ k.replace('_', ' ') }}</td><td class="num">+{{ v }}</td></tr>{% endfor %}</tbody></table></div></div>
+        <tbody>{% for k, v in weights.items() %}<tr><td>{{ k.replace('_', ' ')|capitalize }}</td><td class="num">+{{ v }}</td></tr>{% endfor %}</tbody></table></div></div>
   </details>
   <details>
-    <summary>6 · Consistency analysis</summary>
-    <div class="body"><p class="small">Readable rules compare the classifier with metadata, file properties and file identity. Agreements and
-      conflicts are both shown, with follow-up checks. The result is a qualitative label, never an authenticity percentage.</p></div>
+    <summary><span class="n">06</span><span class="t">Consistency</span></summary>
+    <div class="body"><p>Rules compare the detector with metadata and file identity, and list agreements, conflicts and next steps.</p></div>
   </details>
   <details>
-    <summary>7 · Report integrity (tamper-evident)</summary>
-    <div class="body">
-      <p class="small">The PDF report is generated once, stored, and its SHA-256 is computed from the stored file and recorded in an audit
-        log together with the original image's SHA-256. Every download re-checks the hash and is refused on mismatch.
-        You can re-check the stored PDF or a copy you hold on the report page.</p>
-      <p class="small muted"><strong>Tamper-evident, not tamper-proof.</strong> Changes are detected only while the recorded hash is intact:
-        someone who can also edit the database could change both. A file cannot contain its own hash, so it is shown on the report page
-        and in the TXT/JSON exports. This is not a legal chain of custody.</p>
-    </div>
+    <summary><span class="n">07</span><span class="t">Report integrity</span><span class="meta">tamper-evident</span></summary>
+    <div class="body"><p>Each PDF is stored once and its SHA-256 recorded. Downloads are refused if the hash no longer matches.</p>
+      <p class="small">Tamper-evident, not tamper-proof: someone who can also edit the database could change both. Not a legal chain of custody.</p></div>
   </details>
   <details id="evaluation">
-    <summary>Measured accuracy <span class="meta">{% if evaluation %}{{ evaluation.generated_at[:10] }}{% endif %}</span></summary>
+    <summary><span class="n">08</span><span class="t">Measured accuracy</span><span class="meta">{% if evaluation %}{{ evaluation.generated_at[:10] }}{% endif %}</span></summary>
     <div class="body">
     {% if evaluation %}
       {% set d = evaluation.dataset %}
-      <p class="small">{{ d.n_real }} real photos (30 originals from 10 devices + 30 simulated WhatsApp/screenshot/resized copies) and {{ d.n_ai }}
-        AI images from 10 generators, from Wikimedia Commons. Test split: {{ d.test.n_real }} real / {{ d.test.n_ai }} AI. Small set:
-        one test photo ≈ {{ '%.1f'|format(100 / d.test.n_real) }} points; results may be lower on other images.</p>
-      <p class="small"><strong>{{ 'Target met' if evaluation.target.met_on_test else 'Target not met' }}</strong> (balanced and real-photo accuracy ≥ 70%;
-        “Inconclusive” counts as a non-answer).</p>
+      <p>{{ d.n_real }} real and {{ d.n_ai }} AI images from Wikimedia Commons; test split {{ d.test.n_real }} / {{ d.test.n_ai }}.
+        {{ 'Target met' if evaluation.target.met_on_test else 'Target not met' }} (≥ 70% balanced and real-photo accuracy).</p>
       <div class="table-wrap"><table class="table-compact">
-        <thead><tr><th>Test split</th><th>Real correct</th><th>AI correct</th><th>Balanced</th><th>FPR</th><th>Inconcl.</th></tr></thead>
+        <thead><tr><th>Test split</th><th>Real</th><th>AI</th><th>Balanced</th><th>FPR</th></tr></thead>
         <tbody>
-          {{ row('Model in use – all', evaluation.chosen_test.all) }}
-          {{ row('Originals + AI', evaluation.chosen_test.originals) }}
-          {{ row('Stress group (real)', evaluation.chosen_test.stress_real_only) }}
-          {% if evaluation.baseline_test %}{{ row('Previous model – all', evaluation.baseline_test.test.all) }}{% endif %}
+          {{ row('Current model', evaluation.chosen_test.all) }}
+          {{ row('Stress copies', evaluation.chosen_test.stress_real_only) }}
+          {% if evaluation.baseline_test %}{{ row('Previous model', evaluation.baseline_test.test.all) }}{% endif %}
         </tbody>
       </table></div>
-      {% if evaluation.baseline_test %}
-      {% set b = evaluation.candidates|selectattr('id', 'equalto', evaluation.baseline_test.id)|first %}
-      <p class="small muted gap-top">{{ evaluation.selection_note }} The previous model scored better on this test split but flagged
-        {{ b.val.confusion.real.ai }} of {{ b.val.n_real }} real photos on validation; small samples vary.</p>
-      {% endif %}
-      <details class="gap-top"><summary class="small">All candidates (validation split)</summary>
-        <div class="table-wrap gap-top"><table class="table-compact">
-          <thead><tr><th>Model</th><th>License</th><th>Real</th><th>AI</th><th>Balanced</th><th>FPR</th></tr></thead>
-          <tbody>{% for c in evaluation.candidates %}<tr><td><code>{{ c.id }}</code></td><td class="small">{{ c.license }}</td>
-            {% if c.error %}<td colspan="4">{{ c.error }}</td>{% else %}
-            <td class="num">{{ c.val.real_accuracy|pct }}</td><td class="num">{{ c.val.ai_accuracy|pct }}</td>
-            <td class="num">{{ c.val.balanced_accuracy|pct }}</td><td class="num">{{ c.val.false_positive_rate|pct }}</td>{% endif %}</tr>{% endfor %}</tbody>
-        </table></div></details>
+      <p class="small">Small set; results may be lower on other images. Details in <code>evaluation/results.json</code>.</p>
     {% else %}
-      <p class="small muted">No evaluation results found. Run <code>python -m evaluation.compare_models</code>.</p>
+      <p>No results yet. Run <code>python -m evaluation.compare_models</code>.</p>
     {% endif %}
     </div>
   </details>
   <details>
-    <summary>Limitations</summary>
-    <div class="body"><ul class="list">{% for l in limitations %}<li class="small">{{ l }}</li>{% endfor %}
-      <li class="small">Report hashes are tamper-evident, not tamper-proof, and protect only against someone who cannot also edit the database.</li></ul></div>
+    <summary><span class="n">09</span><span class="t">Limitations</span><span class="meta">{{ limitations|length + 1 }}</span></summary>
+    <div class="body"><ul class="items">{% for l in limitations %}<li class="small">{{ l }}</li>{% endfor %}
+      <li class="small">Report hashes are tamper-evident, not tamper-proof.</li></ul></div>
   </details>
 </div>
 </div>

@@ -1,47 +1,35 @@
 {% extends "base.html" %}
-{% from "_macros.html" import level_badge %}
+{% from "_macros.html" import empty %}
+{% from "_rows.html" import rows %}
 {% block title %}History{% endblock %}
 {% block content %}
-<div class="page-head"><h1>History</h1><a class="btn btn-primary" href="{{ url_for('upload') }}">Upload</a></div>
+<div class="page-head">
+  <div><div class="eyebrow">History</div><h1>Analyses</h1></div>
+  <span class="small mono muted">{{ records|length }} shown</span>
+</div>
 
 <form class="search" method="get" action="{{ url_for('history') }}" role="search">
+  <label for="verdict-filter" class="visually-hidden">Filter by verdict</label>
+  <select id="verdict-filter" data-verdict-filter>
+    <option value="">All verdicts</option>
+    <option value="Likely AI-generated">AI-generated</option>
+    <option value="Likely real">Real</option>
+    <option value="unavailable">Unavailable</option>
+  </select>
   <label for="q" class="visually-hidden">Search by filename, SHA-256 or report ID</label>
-  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search filename, SHA-256 or report ID">
-  <button class="btn" type="submit">Search</button>
-  {% if q %}<a class="btn btn-ghost" href="{{ url_for('history') }}">Clear</a>{% endif %}
+  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Filename, SHA-256 or report ID">
+  <button type="submit" aria-label="Search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
 </form>
 
 {% if records %}
-<div class="table-wrap">
-<table>
-  <thead><tr><th>File</th><th>Received</th><th>AI verdict</th><th>Caution</th><th>Assessment</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
-  <tbody>
-  {% for r in records %}
-  <tr>
-    <td><a class="row-link" href="{{ url_for('analysis', record_id=r.id) }}">{{ r.original_filename }}</a>
-      <div class="small muted"><code>{{ r.id }}</code></div></td>
-    <td class="small nowrap">{{ r.uploaded_at|when }}</td>
-    <td>{% if r.ai_status == 'ok' %}{{ r.ai_prediction }}<div class="small muted">AI {{ r.ai_score|pct }}</div>
-        {% else %}<span class="muted">Unavailable</span>{% endif %}</td>
-    <td class="num">{{ r.caution_score }}</td>
-    <td>{{ level_badge(r.summary_level) }}</td>
-    <td>
-      <div class="row">
-        <a class="btn btn-sm" href="{{ url_for('report', record_id=r.id) }}">Report</a>
-        <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-sm btn-ghost link-danger" aria-label="Delete {{ r.original_filename }}">Delete</button>
-        </form>
-      </div>
-    </td>
-  </tr>
-  {% endfor %}
-  </tbody>
-</table>
-</div>
+<div class="table-wrap"><table>
+  <thead><tr><th>File</th><th>Date (UTC)</th><th>Verdict</th><th>Assessment</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>{{ rows(records, actions=true) }}</tbody>
+</table></div>
+<div data-filter-empty hidden>{{ empty('No matches', 'No analyses with this verdict.') }}</div>
 {% elif q %}
-<div class="panel empty"><strong>No matches</strong>Nothing matches “{{ q }}”.</div>
+{{ empty('No matches', 'Nothing matches “' ~ q ~ '”.', url_for('history'), 'Clear search') }}
 {% else %}
-<div class="panel empty"><strong>No analyses stored yet</strong>Upload an image to create the first report.</div>
+{{ empty('No analyses stored yet', 'Upload an image to create the first report.', url_for('upload'), 'Upload image') }}
 {% endif %}
 {% endblock %}

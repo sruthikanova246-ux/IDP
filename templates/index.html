@@ -1,45 +1,39 @@
 {% extends "base.html" %}
-{% from "_macros.html" import model_badge, level_badge %}
+{% from "_macros.html" import model_badge, empty %}
+{% from "_rows.html" import rows %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <section class="hero">
-  <h1>Check an image's integrity</h1>
-  <p>Fingerprint the file, read its metadata and run an AI-image detector. Every finding is explained.</p>
-  <a class="btn btn-primary" href="{{ url_for('upload') }}">Upload an image</a>
-  <p class="small gap-top">{{ model_badge(model_status) }}
+  <div class="eyebrow">Image integrity</div>
+  <h1>Check an image before you trust it.</h1>
+  <p>SHA-256 fingerprint, metadata and an AI-image detector, in one report.</p>
+  <div class="row">
+    <a class="btn btn-primary" href="{{ url_for('upload') }}">Upload image</a>
+    <a class="btn" href="{{ url_for('methodology') }}">How it works</a>
+    {{ model_badge(model_status) }}
     {% if model_status.state == 'failed' %}
-      <button type="button" class="link-btn" data-model-retry data-csrf="{{ csrf_token() }}" data-url="{{ url_for('model_load') }}">Retry</button>
+      <button type="button" class="btn btn-sm btn-ghost" data-model-retry data-csrf="{{ csrf_token() }}" data-url="{{ url_for('model_load') }}">Retry</button>
     {% endif %}
-  </p>
+  </div>
 </section>
 
-<div class="stats gap-bottom" aria-label="Totals">
-  <div class="stat"><b>{{ stats.total }}</b><span>Analyses</span></div>
-  <div class="stat"><b>{{ stats.unique_files }}</b><span>Unique files</span></div>
-  <div class="stat"><b>{{ stats.ai_ran }}</b><span>With AI result</span></div>
-  <div class="stat"><b>{{ stats.needs_review }}</b><span>Marked for review</span></div>
+<div class="kpis" aria-label="Totals">
+  <div class="kpi"><b>{{ stats.total }}</b><span>Analyses</span></div>
+  <div class="kpi"><b>{{ stats.unique_files }}</b><span>Unique files</span></div>
+  <div class="kpi"><b>{{ stats.ai_ran }}</b><span>With AI result</span></div>
+  <div class="kpi"><b>{{ stats.needs_review }}</b><span>For review</span></div>
 </div>
 
-<section aria-labelledby="recent-h">
-  <div class="page-head"><h2 id="recent-h">Recent</h2>{% if recent %}<a href="{{ url_for('history') }}">All history</a>{% endif %}</div>
+<section class="section-gap" aria-labelledby="recent-h">
+  <div class="page-head section-gap"><div><div class="eyebrow is-muted" id="recent-h">Recent</div></div>
+    {% if recent %}<a class="small" href="{{ url_for('history') }}">View all</a>{% endif %}</div>
   {% if recent %}
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>File</th><th>Received</th><th>AI verdict</th><th>Assessment</th></tr></thead>
-      <tbody>
-      {% for r in recent %}
-        <tr>
-          <td><a class="row-link" href="{{ url_for('analysis', record_id=r.id) }}">{{ r.original_filename }}</a></td>
-          <td class="small nowrap">{{ r.uploaded_at|when }}</td>
-          <td>{% if r.ai_status == 'ok' %}{{ r.ai_prediction }}{% else %}<span class="muted">Unavailable</span>{% endif %}</td>
-          <td>{{ level_badge(r.summary_level) }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>Date (UTC)</th><th>Verdict</th><th>Assessment</th></tr></thead>
+    <tbody>{{ rows(recent) }}</tbody>
+  </table></div>
   {% else %}
-  <div class="panel empty"><strong>No analyses yet</strong>Upload an image to create the first report.</div>
+  {{ empty('No analyses yet', 'Upload an image to create the first report.', url_for('upload'), 'Upload image') }}
   {% endif %}
 </section>
 {% endblock %}

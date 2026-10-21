@@ -1,99 +1,194 @@
+{# ---------------------------------------------------------------- small parts #}
 {% macro tip(text, id, label='More information') -%}
   <span class="tip"><button type="button" class="tip-btn" aria-label="{{ label }}" aria-describedby="{{ id }}">i</button><span class="tip-text" role="tooltip" id="{{ id }}">{{ text }}</span></span>
 {%- endmacro %}
 
 {% macro model_badge(s) -%}
-  {%- set labels = {'ready': 'Model ready', 'loading': 'Model loading…', 'not_loaded': 'Model not loaded yet',
+  {%- set labels = {'ready': 'Model ready', 'loading': 'Model loading…', 'not_loaded': 'Model not loaded',
                     'failed': 'Model unavailable', 'disabled': 'AI detection off'} -%}
   {%- set tone = {'ready': 'is-ok', 'loading': 'is-warn', 'not_loaded': 'is-warn', 'failed': 'is-bad', 'disabled': ''} -%}
-  <span class="badge {{ tone.get(s.state, '') }}" data-model-badge>{{ labels.get(s.state, s.state) }}</span>
+  <span class="badge {{ tone.get(s.state, '') }}" data-model-badge><span class="dot {{ tone.get(s.state, '') }}"></span>{{ labels.get(s.state, s.state) }}</span>
 {%- endmacro %}
 
 {% macro level_badge(level) -%}
-  {%- set labels = {'review': 'Review recommended', 'conflicting': 'Conflicting evidence',
-                    'no_strong_indicators': 'No strong indicators', 'limited': 'No AI result',
-                    'inconclusive': 'Classifier inconclusive'} -%}
+  {%- set labels = {'review': 'Review', 'conflicting': 'Conflicting', 'no_strong_indicators': 'No strong indicators',
+                    'limited': 'No AI result', 'inconclusive': 'Inconclusive'} -%}
   {%- set tone = {'review': 'is-warn', 'conflicting': 'is-bad', 'no_strong_indicators': 'is-ok', 'limited': '', 'inconclusive': 'is-warn'} -%}
   <span class="badge {{ tone.get(level, '') }}">{{ labels.get(level, level) }}</span>
 {%- endmacro %}
 
-{% macro score_bar(label, value, neutral=false) -%}
-  <div class="score">
-    <div class="score-head"><span>{{ label }}</span><strong>{{ value|pct }}</strong></div>
-    <div class="bar" role="progressbar" aria-label="{{ label }}" aria-valuemin="0" aria-valuemax="100"
-         aria-valuenow="{{ '%.1f'|format(value * 100) }}" aria-valuetext="{{ value|pct }}">
-      <div class="bar-fill{% if neutral %} is-neutral{% endif %}" data-width="{{ '%.2f'|format(value * 100) }}"></div>
+{% macro verdict_badge(status, prediction) -%}
+  {%- if status != 'ok' -%}<span class="badge">Unavailable</span>
+  {%- elif prediction == 'Likely AI-generated' -%}<span class="badge is-violet">AI-generated</span>
+  {%- elif prediction == 'Likely real' -%}<span class="badge is-ok">Real</span>
+  {%- else -%}<span class="badge is-warn">{{ prediction or 'Inconclusive' }}</span>{%- endif -%}
+{%- endmacro %}
+
+{% macro idbar(label, value, id) -%}
+  <div class="idbar">
+    <label for="{{ id }}">{{ label }}</label>
+    <input id="{{ id }}" type="text" value="{{ value }}" readonly spellcheck="false">
+    <button type="button" class="btn btn-sm" data-copy="{{ id }}">Copy</button>
+  </div>
+{%- endmacro %}
+
+{% macro empty(title, text, action_url=None, action_label=None) -%}
+  <div class="card empty">
+    <div class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg></div>
+    <strong>{{ title }}</strong>
+    <p>{{ text }}</p>
+    {% if action_url %}<a class="btn btn-primary" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+  </div>
+{%- endmacro %}
+
+{# ---------------------------------------------------------- verdict components #}
+{% macro status_banner(ai) -%}
+  {%- if ai.status != 'ok' -%}{%- set cls = 'is-unknown' -%}{%- set text = 'AI analysis unavailable' -%}
+  {%- elif ai.prediction_label == 'Likely AI-generated' -%}{%- set cls = 'is-ai' -%}{%- set text = ai.prediction_label -%}
+  {%- elif ai.prediction_label == 'Likely real' -%}{%- set cls = 'is-real' -%}{%- set text = ai.prediction_label -%}
+  {%- else -%}{%- set cls = 'is-unknown' -%}{%- set text = ai.prediction_label -%}{%- endif -%}
+  <div class="status {{ cls }}" role="status">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>
+    <span>Status: {{ text }}</span>
+  </div>
+{%- endmacro %}
+
+{# Model output only; never combined with the heuristic caution score. #}
+{% macro metric(ai) -%}
+  <div class="card metric">
+    <div class="eyebrow is-muted">AI-generated score</div>
+    {% if ai.status == 'ok' and ai.ai_score is not none %}
+      <div class="value {{ 'is-ai' if ai.ai_score > 0.5 else 'is-real' }}">{{ ai.ai_score|pct }}</div>
+      <div class="bars">
+        <div class="score-row"><span>AI-generated</span><b>{{ ai.ai_score|pct }}</b></div>
+        <div class="bar" role="progressbar" aria-label="AI-generated score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ '%.1f'|format(ai.ai_score * 100) }}"><div class="bar-fill is-ai" data-width="{{ '%.2f'|format(ai.ai_score * 100) }}"></div></div>
+        {% if ai.real_score is not none %}
+        <div class="score-row"><span>Real-image</span><b>{{ ai.real_score|pct }}</b></div>
+        <div class="bar" role="progressbar" aria-label="Real-image score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ '%.1f'|format(ai.real_score * 100) }}"><div class="bar-fill is-real" data-width="{{ '%.2f'|format(ai.real_score * 100) }}"></div></div>
+        {% endif %}
+      </div>
+      <p class="small muted">Not independently calibrated {{ tip(ai.confidence_note ~ ' ' ~ ai.decision_rule, 'tip-scores', 'About these scores') }}</p>
+    {% else %}
+      <div class="value">—</div>
+      <p class="small muted">AI analysis unavailable</p>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro recommendation(rep) -%}
+  {%- set ai = rep.ai_detection -%}
+  {%- set why = rep.consistency.observations|selectattr('category', 'in', ['cross-check', 'ai'])|list -%}
+  <div class="card rec">
+    <div class="eyebrow is-muted">Recommendation</div>
+    <dl>
+      <dt>What this means</dt>
+      <dd class="lead">{{ rep.preliminary_assessment.text.split(' This is a preliminary')[0] }}</dd>
+      {% if why %}<dt>Why</dt><dd><ul>{% for o in why[:3] %}<li>{{ o.title }}</li>{% endfor %}</ul></dd>{% endif %}
+      {% if ai.status != 'ok' %}<dt>AI model</dt><dd>No AI prediction was produced ({{ ai.status }}). {{ ai.message }}</dd>{% endif %}
+      {%- set specific = rep.consistency.observations|rejectattr('category', 'equalto', 'identity')|selectattr('follow_up')|list -%}
+      {%- set checks = rep.consistency.recommended_checks -%}
+      {% if specific or checks %}
+      <div class="sep"><dt>Next step</dt><dd>{{ specific[0].follow_up if specific else (checks[1] if checks|length > 1 else checks[0]) }}</dd></div>
+      {% endif %}
+    </dl>
+    {% if ai.status == 'ok' %}<div class="model-line">{{ ai.model_id }} · {{ (ai.commit_hash or ai.revision or '')[:10] }}</div>{% endif %}
+  </div>
+{%- endmacro %}
+
+{# ------------------------------------------------------------- image review #}
+{% macro image_review(r, rep, previewable) -%}
+  {%- set has_ela = previewable and r.derived_filename and rep.heuristics.ela -%}
+  <div class="review">
+    {% if has_ela %}
+    <div class="review-tools">
+      <label><input type="checkbox" data-overlay-toggle> ELA overlay</label>
+      <label class="muted small">Opacity <input type="range" min="10" max="100" value="70" data-overlay-opacity aria-label="Overlay opacity"></label>
+      {{ tip('Error Level Analysis: differences after re-saving the JPEG. A visual aid only; not scored.', 'tip-ela', 'About ELA') }}
+    </div>
+    {% endif %}
+    <div class="stage">
+      {% if previewable %}
+      <div class="frame">
+        <img src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded image {{ rep.file.original_filename }}">
+        {% if has_ela %}<img class="overlay" src="{{ url_for('evidence_file', record_id=r.id, kind='ela') }}" alt="" hidden data-overlay>{% endif %}
+      </div>
+      {% else %}
+      <p class="placeholder small">No browser preview for {{ rep.file.detected_format }}.</p>
+      {% endif %}
     </div>
   </div>
 {%- endmacro %}
 
-{% macro copy_field(label, value, id) -%}
-  <label class="field-label" for="{{ id }}">{{ label }}</label>
-  <div class="copy">
-    <input id="{{ id }}" type="text" value="{{ value }}" readonly spellcheck="false">
-    <button type="button" data-copy="{{ id }}">Copy</button>
-  </div>
+{# ----------------------------------------------------------- signal groups #}
+{% macro list_items(items, kind='finding') %}
+  <ul class="items">
+  {% for i in items %}
+    <li><div class="t">{% if kind == 'finding' and i.weight %}<span class="badge is-warn">+{{ i.weight }}</span>{% elif kind == 'obs' and i.kind == 'caution' %}<span class="dot is-warn"></span>{% endif %}{{ i.title }}</div>
+      <div class="d">{{ i.detail }}</div></li>
+  {% else %}<li class="muted small">None.</li>{% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro kv(d, humanize=false) -%}
+  <dl class="kv">{% for k, v in d.items() %}<dt>{{ k.replace('_', ' ')|capitalize if humanize else k }}</dt><dd>{{ v if v is not none else '—' }}</dd>{% endfor %}</dl>
 {%- endmacro %}
 
-{# The AI verdict: model output only. Never combined with the heuristic caution score. #}
-{% macro verdict(ai) %}
-  <div class="verdict-label">AI-generated image detection</div>
-  {% if ai.status == 'ok' and ai.ai_score is not none %}
-    <div class="verdict">{{ ai.prediction_label }}</div>
-    {{ score_bar('AI-generated score', ai.ai_score) }}
-    {% if ai.real_score is not none %}{{ score_bar('Real-image score', ai.real_score, neutral=true) }}{% endif %}
-    <p class="small muted">Not independently calibrated
-      {{ tip(ai.confidence_note ~ ' ' ~ ai.decision_rule, 'tip-scores', 'About these scores') }}</p>
-    <div class="model-line"><code>{{ ai.model_id }}</code> · revision <code>{{ (ai.commit_hash or ai.revision or '')[:10] }}</code></div>
-  {% elif ai.status == 'ok' %}
-    <div class="verdict">{{ ai.prediction_label }}</div>
-    <p class="unavailable">{{ ai.message }}</p>
-  {% else %}
-    <div class="verdict">AI analysis unavailable</div>
-    <p class="unavailable" role="status">No AI prediction was produced ({{ ai.status }}). {{ ai.message }}
-      Metadata, hashing and heuristic checks still ran.</p>
-  {% endif %}
-{% endmacro %}
-
-{% macro raw_output(ai) %}
-  {% if ai.status == 'ok' %}
-  <div class="table-wrap"><table class="table-compact">
-    <thead><tr><th>Output</th><th>Label</th><th>Logit</th><th>Score</th></tr></thead>
-    <tbody>
-    {% for s in ai.scores %}
-      <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td class="num">{{ '%.4f'|format(s.logit) }}</td>
-        <td class="num">{{ '%.6f'|format(s.score if s.score is defined else s.softmax) }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table></div>
-  <p class="small muted gap-top">{{ ai.output_mapping or '' }} Inference {{ ai.inference_ms }} ms on CPU; model input {{ ai.model_input_size }}.</p>
-  {% endif %}
-{% endmacro %}
-
-{% macro findings(items) %}
-  <ul class="list">
-  {% for item in items %}
-    <li><div class="title">{% if item.weight %}<span class="badge is-warn">+{{ item.weight }}</span>{% endif %}{{ item.title }}</div>
-      <div class="detail">{{ item.detail }}</div></li>
-  {% else %}
-    <li class="muted">Nothing recorded.</li>
-  {% endfor %}
-  </ul>
-{% endmacro %}
-
-{% macro observations(items) %}
-  <ul class="list">
-  {% for o in items %}
-    <li><div class="title">{% if o.kind == 'caution' %}<span class="badge is-warn">caution</span>{% endif %}{{ o.title }}</div>
-      <div class="detail">{{ o.detail }}</div></li>
-  {% else %}
-    <li class="muted">No observations.</li>
-  {% endfor %}
-  </ul>
-{% endmacro %}
-
-{% macro kv_table(d, empty, humanize=false) %}
-  {% if d %}
-  <dl class="kv">{% for k, v in d.items() %}<dt>{{ k.replace('_', ' ')|capitalize if humanize else k }}</dt><dd>{{ v if v is not none else '—' }}</dd>{% endfor %}</dl>
-  {% else %}<p class="muted small">{{ empty }}</p>{% endif %}
+{% macro signals(rep, full=false) %}
+  {%- set ai = rep.ai_detection -%}{%- set md = rep.metadata -%}{%- set heur = rep.heuristics -%}
+  {%- set weighted = heur.findings|selectattr('weight')|list -%}
+  {%- set level_tone = {'review': 'is-warn', 'conflicting': 'is-bad', 'no_strong_indicators': 'is-ok', 'inconclusive': 'is-warn'} -%}
+  {%- set lims = (ai.known_limitations or rep.ai_model.known_limitations or []) -%}
+  <section class="signals" aria-label="Signals">
+    <div class="signals-head"><span class="eyebrow is-muted">Signals</span>
+      <span class="small mono muted">caution score {{ heur.caution_score }}/100</span></div>
+    <details>
+      <summary><span class="dot {{ 'is-accent' if ai.status == 'ok' else 'is-warn' }}"></span>AI model output<span class="count">{{ ai.status }}</span></summary>
+      <div class="body">
+        {% if ai.status == 'ok' %}
+        <div class="table-wrap"><table class="table-compact">
+          <thead><tr><th>Label</th><th>Logit</th><th>Score</th></tr></thead>
+          <tbody>{% for s in ai.scores %}<tr><td>{{ s.label }}</td><td class="num">{{ '%.4f'|format(s.logit) }}</td>
+            <td class="num">{{ '%.6f'|format(s.score if s.score is defined else s.softmax) }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+        <p class="small muted section-gap">{{ ai.model_id }} · revision {{ ai.commit_hash or ai.revision }} · {{ ai.inference_ms }} ms · input {{ ai.model_input_size }}</p>
+        {% else %}<p class="small muted">AI analysis unavailable. {{ ai.message }}</p>{% endif %}
+      </div>
+    </details>
+    <details>
+      <summary><span class="dot {{ 'is-ok' if md.exif_present else '' }}"></span>Metadata<span class="count">{{ md.exif_tag_count }} tags</span></summary>
+      <div class="body">
+        {{ kv(md.key_fields, true) }}
+        {% if full %}
+          <p class="eyebrow is-muted section-gap">Image</p>{{ kv(md.image, true) }}
+          {% if md.exif %}<p class="eyebrow is-muted section-gap">EXIF</p>{{ kv(md.exif) }}{% endif %}
+          {% if md.exif_sub_ifd %}<p class="eyebrow is-muted section-gap">EXIF sub-IFD</p>{{ kv(md.exif_sub_ifd) }}{% endif %}
+          {% if md.gps %}<p class="eyebrow is-muted section-gap">GPS</p>{{ kv(md.gps) }}{% endif %}
+          {% if md.embedded_text %}<p class="eyebrow is-muted section-gap">Embedded text</p>{{ kv(md.embedded_text) }}{% endif %}
+          <p class="eyebrow is-muted section-gap">Containers</p>{{ kv(md.containers) }}
+          <p class="eyebrow is-muted section-gap">File</p>
+          <dl class="kv"><dt>MD5</dt><dd class="mono">{{ rep.file.md5 }}</dd><dt>Extension</dt><dd>.{{ rep.file.extension }}{% if not rep.file.extension_matches_content %} (mismatch){% endif %}</dd></dl>
+        {% endif %}
+        {% if not md.exif_present %}<p class="small muted section-gap">No EXIF. Common for shared images; not evidence of manipulation.</p>{% endif %}
+      </div>
+    </details>
+    <details>
+      <summary><span class="dot {{ 'is-warn' if weighted else 'is-ok' }}"></span>Heuristics<span class="count">{{ weighted|length }} flagged</span></summary>
+      <div class="body">{{ list_items(heur.findings) }}</div>
+    </details>
+    <details>
+      <summary><span class="dot {{ level_tone.get(rep.preliminary_assessment.level, '') }}"></span>Consistency<span class="count">{{ rep.consistency.observations|length }}</span></summary>
+      <div class="body">{{ list_items(rep.consistency.observations, 'obs') }}
+        {% if full %}<p class="eyebrow is-muted section-gap">Next steps</p>
+        <ol class="small muted">{% for s in rep.consistency.recommended_checks %}<li>{{ s }}</li>{% endfor %}</ol>{% endif %}
+      </div>
+    </details>
+    <details>
+      <summary><span class="dot"></span>Limitations<span class="count">{{ lims|length + rep.limitations|length }}</span></summary>
+      <div class="body"><ul class="items">
+        {% for l in lims %}<li class="small">{{ l }}</li>{% endfor %}
+        {% for l in rep.limitations %}<li class="small">{{ l }}</li>{% endfor %}
+        {% if full %}<li class="small muted">{{ rep.custody_note }}</li>{% endif %}
+      </ul></div>
+    </details>
+  </section>
 {% endmacro %}

@@ -2,28 +2,29 @@
 {% from "_macros.html" import model_badge %}
 {% block title %}Upload{% endblock %}
 {% block content %}
-<div class="narrow center">
-  <div class="page-head"><div><h1>Upload an image</h1></div><div>{{ model_badge(model_status) }}</div></div>
+<div class="narrow">
+  <div class="page-head">
+    <div><div class="eyebrow">Upload</div><h1>Analyse an image</h1></div>
+    {{ model_badge(model_status) }}
+  </div>
 
   <form id="upload-form" method="post" action="{{ url_for('upload_post') }}" enctype="multipart/form-data"
         data-max-bytes="{{ max_mb * 1024 * 1024 }}" data-allowed="{{ allowed|join(',') }}" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <label class="dropzone" id="dropzone" for="evidence">
-      <span class="icon" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
-      </span>
+      <span class="ico" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></span>
       <strong>Drop an image or click to browse</strong>
-      <span class="small muted" id="file-help">{{ allowed|map('upper')|join(', ') }} · up to {{ max_mb }} MB</span>
+      <span class="hint" id="file-help">{{ allowed|map('upper')|join(' · ') }} · max {{ max_mb }} MB</span>
       <input id="evidence" name="evidence" type="file" required aria-describedby="file-help file-error"
              accept="{% for e in allowed %}.{{ e }}{% if not loop.last %},{% endif %}{% endfor %}">
     </label>
 
-    <div id="selected" class="panel gap-top" hidden>
+    <div id="selected" class="card" hidden>
       <div class="selected">
         <img id="preview-img" alt="Preview of the selected image">
-        <div>
-          <p id="preview-name" class="gap-bottom"></p>
+        <div class="stack">
+          <p id="preview-name" class="mono small"></p>
           <div class="row">
             <button id="submit-btn" class="btn btn-primary" type="submit">Analyse</button>
             <button id="clear-btn" class="btn btn-ghost" type="button">Choose another</button>
@@ -31,13 +32,11 @@
         </div>
       </div>
       <div id="progress" hidden>
-        <ol class="steps" aria-hidden="true">
-          <li data-step="upload">Upload</li><li data-step="analyse">Analyse</li><li data-step="done">Result</li>
-        </ol>
+        <ol class="steps" aria-hidden="true"><li data-step="upload">Upload</li><li data-step="analyse">Analyse</li><li data-step="done">Result</li></ol>
         <div class="bar" role="progressbar" aria-label="Upload and analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar">
           <div id="progress-fill" class="bar-fill"></div>
         </div>
-        <p id="progress-text" class="small muted gap-top" aria-live="polite">Uploading…</p>
+        <p id="progress-text" class="progress-note" aria-live="polite">Uploading…</p>
       </div>
     </div>
 

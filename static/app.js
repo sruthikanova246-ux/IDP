@@ -55,6 +55,32 @@ document.querySelectorAll("[data-tabs]").forEach((root) => {
   });
 });
 
+// Image review: ELA overlay on/off and opacity.
+document.querySelectorAll(".review").forEach((root) => {
+  const overlay = root.querySelector("[data-overlay]");
+  const toggle = root.querySelector("[data-overlay-toggle]");
+  const opacity = root.querySelector("[data-overlay-opacity]");
+  if (!overlay || !toggle) return;
+  const apply = () => { overlay.hidden = !toggle.checked; overlay.style.opacity = String((opacity ? opacity.value : 70) / 100); };
+  toggle.addEventListener("change", apply);
+  if (opacity) opacity.addEventListener("input", apply);
+});
+
+// History: filter rows by verdict (client side; the search box filters on the server).
+(function verdictFilter() {
+  const select = document.querySelector("[data-verdict-filter]");
+  if (!select) return;
+  const rows = [...document.querySelectorAll("tbody tr[data-verdict]")];
+  const none = document.querySelector("[data-filter-empty]");
+  const table = rows.length ? rows[0].closest(".table-wrap") : null;
+  select.addEventListener("change", () => {
+    let shown = 0;
+    rows.forEach((tr) => { const on = !select.value || tr.dataset.verdict === select.value; tr.hidden = !on; shown += on; });
+    if (table) table.hidden = shown === 0;
+    if (none) none.hidden = shown !== 0;
+  });
+})();
+
 // Confirm dialog for destructive forms
 const dialog = document.getElementById("confirm-dialog");
 document.querySelectorAll("form[data-confirm]").forEach((form) => {

@@ -78,27 +78,32 @@ Optional – rebuild the labelled evaluation set (about 300 MB from Wikimedia Co
 |---|---|---|
 | Dashboard | `/` | One primary action (upload), model status, totals, recent analyses or an empty state |
 | Upload | `/upload` | One dropzone (drag-and-drop or browse), formats and size limit on one line, preview, upload progress, then an "Analysing" state |
-| Results | `/analysis/<id>` | Verdict (Likely AI-generated / Likely real / Inconclusive) with both scores, model name and revision, "Not independently calibrated"; assessment badge and caution score; copyable SHA-256; tabs for Metadata, Heuristics, Consistency, Limitations |
+| Results | `/analysis/<id>` | Image with ELA overlay toggle; status banner (Likely AI-generated / Likely real / Inconclusive); AI score tile with both scores and "Not independently calibrated"; What this means / Why / Next step; model and revision; copyable SHA-256 and report ID; expandable signal groups (AI output, Metadata, Heuristics, Consistency, Limitations) |
 | Detailed report | `/report/<id>` | TXT / JSON / PDF downloads; report-integrity block (PDF SHA-256, original image SHA-256, re-check, check a PDF copy, audit trail); accordion with model output, findings, ELA, observations, metadata, limitations; delete |
-| History | `/history` | Searchable table (filename, SHA-256, report ID), delete with confirmation, empty state |
-| Methodology | `/methodology` | Short intro and a "How this works" accordion: steps, model, caution-score weights, report integrity, measured accuracy, limitations |
+| History | `/history` | Table with thumbnails, verdict and assessment badges; search (filename, SHA-256, report ID) with a verdict filter; delete with confirmation; empty states |
+| Methodology | `/methodology` | Numbered accordion with one-line explanations: validation, hashing, metadata, AI detector, heuristics, consistency, report integrity, measured accuracy, limitations |
 
 ### Interface design
 
-- One neutral palette with a single accent colour, light and dark themes (follows the system setting), a fixed type scale
-  (13/15/18/24/32 px) and spacing scale, visible keyboard focus, `prefers-reduced-motion` support, no gradients and no
-  decorative images. The only images shown are the user's upload and the app's own ELA output.
-- Layout and interaction patterns were taken from SynthID Detector (centred single-action upload flow, image beside the
-  result) and Illuminarty (one headline result, short explanations per detector). No logos, wording or assets were copied.
-- Components (dropzone, stepper/progress, badges, tabs, accordion, toast, empty state, confirmation dialog, tooltip) follow
-  common patterns browsed on 21st.dev, but **no code was copied from 21st.dev**: the component pages viewed (e.g. "File Upload"
-  by extend-hq) did not state a license and are React/Tailwind, so everything was written from scratch in plain CSS
-  (`static/style.css`) and JavaScript (`static/app.js`) with no build step or new dependency.
-- Accessibility: labelled controls, WAI-ARIA tabs with arrow-key navigation, `role="progressbar"` with `aria-valuenow` during
-  upload and `aria-busy` while analysing, `role="alert"` for errors, `aria-live` toast, native `<dialog>` for delete
-  confirmation, tooltips reachable by keyboard.
-- The upload progress bar shows the real upload percentage; the analysis step is shown as indeterminate because the
-  server analyses in one request and does not report progress.
+- **Theme:** black background (`#07080B`) with dark grey surfaces, one indigo accent (`#4361EE`) and tinted status colours
+  (green = real / OK, violet = AI-generated, amber = review, red = error). Dark only, consistent across pages.
+- **Fonts:** DM Sans for text and DM Mono for labels, IDs and hashes, self-hosted in `static/fonts/` (the CSP blocks font
+  CDNs). Both are licensed under the SIL Open Font License 1.1; the license files are in `static/fonts/`. Source:
+  `@fontsource-variable/dm-sans@5.2.8` and `@fontsource/dm-mono@5.2.7` (Latin subset only).
+- **Text:** each page carries only labels, values and one-line explanations; detail lives in expandable sections.
+- **Component patterns** (all written from scratch in plain CSS/JS; no code, logos, wording or assets copied):
+  - from FauxScan's sample-report page: monospace eyebrow labels, the status banner ("Status: Likely real"), the score tile
+    beside a "What this means / Why / Next step" card, the ID bar with copy, the expandable signal groups with status dots
+    and counts, and the image review panel with an overlay toggle and opacity slider (used here for the app's real ELA output;
+    FauxScan's "Confidence: High" tile was not copied because this app has no calibrated confidence);
+  - from 21st.dev categories (File Upload, Table, Stats, Badge, Search Bar, Stepper/Timeline, Empty State): dropzone, data table
+    with thumbnails, KPI tiles, tinted badges, search with a verdict filter, vertical audit-trail timeline, empty states.
+    The 21st.dev component pages viewed did not state a license, so only the visual pattern was used;
+  - earlier references: SynthID Detector (centred upload flow) and Illuminarty (one headline result).
+- **Accessibility:** labelled controls, `role="progressbar"` with `aria-valuenow` / `aria-busy`, `role="alert"` for errors,
+  `aria-live` toast, native `<dialog>` and `<details>`, keyboard-reachable tooltips, visible focus, `prefers-reduced-motion`.
+- The upload bar shows the real upload percentage; analysis is shown as indeterminate because the server reports no progress.
+- History thumbnails show the user's own uploads; the verdict filter runs in the browser, the text search on the server.
 
 ## AI model
 
@@ -154,15 +159,19 @@ metadata names a generator while the classifier does not.
 **Root cause of the original problem.** Not a bug. The labels were checked (`0 = ai`, `1 = hum`, read by name), and the
 preprocessing matched the model card (224×224 bilinear resize, mean/std 0.5, no crop). On the validation photos, changing the
 preprocessing (no EXIF rotation, or downscaling first) moved at most 1 of 20 results. The previous model itself was
-unreliable on real photographs, and its errors depended on the camera: Fujifilm, Google Pixel and Sony photos scored about 99% "AI",
-while Nikon, Olympus, iPhone and Xiaomi photos scored about 0%.
+unreliable on real photographs, and its errors depended on the camera: on validation, the Nikon D5200, Google Pixel and
+Sony ILCE-7 photos (and their stress copies) scored about 99% "AI", while Nikon D7000, Olympus, iPhone and Xiaomi photos
+scored about 0%.
 
 **Dataset** (`tests/eval_data/labels.csv`, built 2026-10-21 by `tests/eval_data/build_eval_set.py`, all from Wikimedia
 Commons with recorded source page, author, license and checksums):
 
-- 30 real camera/phone photographs: 3 each from 10 devices (Canon EOS 5D Mark II, Nikon D7000, Sony ILCE-7, Fujifilm X-T1,
-  Olympus E-M5, iPhone 11 Pro, Samsung Galaxy S9, Google Pixel, Huawei P20 Pro, Xiaomi Redmi Note 7), taken from the
-  "Taken with …" categories, captured before June 2022 and uploaded before 2023.
+- 30 real camera/phone photographs from 12 devices, 3 from each of 10 "Taken with …" categories (Canon EOS 5D Mark II,
+  Nikon D7000, Sony ILCE-7, Fujifilm X-T1, Olympus E-M5, iPhone 11 Pro, Samsung Galaxy S9, Google Pixel, Huawei P20 Pro,
+  Xiaomi Redmi Note 7), captured before June 2022 and uploaded before 2023. Two files' EXIF does not match their category:
+  one in the Fujifilm group was taken with a Nikon D5200 and one in the Sony group with a Samsung Galaxy S10
+  (`camera_or_generator` in `labels.csv` records the EXIF device). Both are still camera photographs, so the real/AI labels
+  and all accuracy figures are unaffected; only the per-device grouping (file names, `stratum`) is approximate.
 - 30 stress copies of those photos, made locally and labelled as simulations: WhatsApp-style recompression
   (1600 px, JPEG q60, metadata stripped), phone-screenshot framing (PNG 1080×2340), and plain resizing (1024 px, q85).
 - 45 AI-generated images from 10 generators (Stable Diffusion, Midjourney, DALL-E 3, Bing Image Creator, ChatGPT,

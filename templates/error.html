@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ title or ('Not found' if code == 404 else 'Error') }}{% endblock %}
 {% block content %}
-<div class="narrow center panel empty">
+<div class="narrow card empty">
+  <div class="ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></div>
   <strong>{{ title or ('Not found' if code == 404 else 'Something went wrong') }}</strong>
   <p role="alert">{{ message }}</p>
-  <div class="row center-row">
+  <div class="row empty-actions">
     {% if back_url %}<a class="btn btn-primary" href="{{ back_url }}">{{ back_label }}</a>
     {% else %}<a class="btn" href="{{ url_for('index') }}">Dashboard</a><a class="btn btn-primary" href="{{ url_for('upload') }}">Upload</a>{% endif %}
   </div>

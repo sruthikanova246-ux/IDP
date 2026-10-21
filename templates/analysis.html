@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% from "_macros.html" import verdict, level_badge, copy_field, findings, observations, kv_table, raw_output %}
+{% from "_macros.html" import status_banner, metric, recommendation, idbar, image_review, signals %}
 {% block title %}Result · {{ rep.file.original_filename }}{% endblock %}
 {% block content %}
-{% set f = rep.file %}{% set md = rep.metadata %}{% set heur = rep.heuristics %}
+{% set f = rep.file %}{% set md = rep.metadata %}
 <div class="page-head">
   <div>
+    <div class="eyebrow">Result</div>
     <h1>{{ f.original_filename }}</h1>
-    <p class="small">Received {{ f.received_at|when }} · {{ f.detected_format }} · {{ md.image.width }}×{{ md.image.height }} · {{ f.size_bytes|filesize }}</p>
+    <p class="sub">{{ f.received_at|when }} · {{ f.detected_format }} · {{ md.image.width }}×{{ md.image.height }} · {{ f.size_bytes|filesize }}</p>
   </div>
   <div class="row">
     <a class="btn btn-primary" href="{{ url_for('report', record_id=r.id) }}">Full report</a>
@@ -14,47 +15,17 @@
   </div>
 </div>
 
-<section class="panel split" aria-label="Result">
-  <div class="media">
-    {% if previewable %}
-      <img src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded image {{ f.original_filename }}">
-    {% else %}
-      <p class="muted small">Browsers cannot display {{ f.detected_format }}; the file was analysed.</p>
-    {% endif %}
+<div class="stack">
+  {{ image_review(r, rep, previewable) }}
+  {{ status_banner(rep.ai_detection) }}
+  <div class="grid grid-result">
+    {{ metric(rep.ai_detection) }}
+    {{ recommendation(rep) }}
   </div>
-  <div>{{ verdict(rep.ai_detection) }}</div>
-</section>
-
-<section class="panel">
-  <div class="row gap-bottom">{{ level_badge(rep.preliminary_assessment.level) }}
-    <span class="small muted">Heuristic caution score {{ heur.caution_score }}/100 (separate from the AI score)</span></div>
-  <p class="small">{{ rep.preliminary_assessment.text }}</p>
-  {{ copy_field('SHA-256 of the uploaded file', f.sha256, 'sha-field') }}
-</section>
-
-<section class="panel tabs" data-tabs>
-  <div role="tablist" aria-label="Details">
-    <button role="tab" id="t-meta" aria-controls="p-meta" aria-selected="true">Metadata</button>
-    <button role="tab" id="t-heur" aria-controls="p-heur" aria-selected="false" tabindex="-1">Heuristics <span class="muted small">{{ heur.caution_score }}</span></button>
-    <button role="tab" id="t-cons" aria-controls="p-cons" aria-selected="false" tabindex="-1">Consistency</button>
-    <button role="tab" id="t-lim" aria-controls="p-lim" aria-selected="false" tabindex="-1">Limitations</button>
+  <div>
+    {{ idbar('SHA-256', f.sha256, 'sha-field') }}
+    {{ idbar('Report ID', r.id, 'id-field') }}
   </div>
-  <div role="tabpanel" id="p-meta" aria-labelledby="t-meta" tabindex="0">
-    {{ kv_table(md.key_fields, '', true) }}
-    {% if not md.exif_present %}<p class="small muted gap-top">No EXIF metadata. Many legitimate images have none.</p>{% endif %}
-  </div>
-  <div role="tabpanel" id="p-heur" aria-labelledby="t-heur" tabindex="0" hidden>
-    <p class="small muted">Rule-weight sum, not a probability. Never combined with the AI score.</p>
-    {{ findings(heur.findings) }}
-  </div>
-  <div role="tabpanel" id="p-cons" aria-labelledby="t-cons" tabindex="0" hidden>
-    {{ observations(rep.consistency.observations) }}
-  </div>
-  <div role="tabpanel" id="p-lim" aria-labelledby="t-lim" tabindex="0" hidden>
-    <ul class="list">
-      {% for l in rep.ai_detection.known_limitations or rep.ai_model.known_limitations or [] %}<li class="small">{{ l }}</li>{% endfor %}
-      {% for l in rep.limitations %}<li class="small">{{ l }}</li>{% endfor %}
-    </ul>
-  </div>
-</section>
+  {{ signals(rep) }}
+</div>
 {% endblock %}

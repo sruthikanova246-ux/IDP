@@ -1,12 +1,13 @@
 {% extends "base.html" %}
-{% from "_macros.html" import verdict, level_badge, copy_field, findings, observations, kv_table, raw_output, tip %}
+{% from "_macros.html" import status_banner, metric, recommendation, idbar, signals, tip %}
 {% block title %}Report {{ r.id }}{% endblock %}
 {% block content %}
-{% set f = rep.file %}{% set md = rep.metadata %}{% set heur = rep.heuristics %}
+{% set f = rep.file %}
 <div class="page-head">
   <div>
-    <h1>Integrity report</h1>
-    <p class="small"><code>{{ rep.report_id }}</code> · {{ f.original_filename }} · {{ f.received_at|when }}</p>
+    <div class="eyebrow">Integrity report</div>
+    <h1>{{ f.original_filename }}</h1>
+    <p class="sub">{{ rep.report_id }} · {{ f.received_at|when }}</p>
   </div>
   <div class="row" aria-label="Download report">
     <a class="btn btn-primary" href="{{ url_for('download', record_id=r.id, fmt='pdf') }}">Download PDF</a>
@@ -15,115 +16,60 @@
   </div>
 </div>
 
-<section class="panel" id="integrity" aria-labelledby="integrity-h">
-  <div class="integrity-status">
-    <h2 id="integrity-h" class="h3">Report integrity</h2>
-    {% set st = {'match': ('is-ok', 'PDF matches recorded hash'), 'mismatch': ('is-bad', 'PDF does not match recorded hash'),
-                 'missing': ('is-bad', 'Stored PDF missing'), 'not_generated': ('', 'PDF not generated yet')}[pdf_status] %}
-    <span class="badge {{ st[0] }}">{{ st[1] }}</span>
-    {{ tip("Tamper-evident, not tamper-proof: a change to the stored PDF is detected as long as the recorded hash in the database is intact. This is not a legal chain of custody.", 'tip-integrity', 'About report integrity') }}
-  </div>
-  <div class="stack">
+<div class="stack">
+  <section class="card" id="integrity" aria-labelledby="integrity-h">
+    {% set st = {'match': ('is-ok', 'Matches recorded hash'), 'mismatch': ('is-bad', 'Does not match recorded hash'),
+                 'missing': ('is-bad', 'Stored PDF missing'), 'not_generated': ('', 'Not generated yet')}[pdf_status] %}
+    <div class="card-head">
+      <div class="row"><h2 id="integrity-h" class="eyebrow is-muted">Report integrity</h2>
+        {{ tip('Tamper-evident, not tamper-proof: changes are detected while the recorded hash is intact. Not a legal chain of custody.', 'tip-integrity', 'About report integrity') }}</div>
+      <span class="badge {{ st[0] }}"><span class="dot {{ st[0] }}"></span>PDF · {{ st[1] }}</span>
+    </div>
     {% if pdf.pdf_sha256 %}
-      <div>{{ copy_field('SHA-256 of the generated PDF file', pdf.pdf_sha256, 'pdf-sha') }}
-        <p class="small muted gap-top">Recorded {{ pdf.pdf_generated_at|when }}. A file cannot contain its own hash, so it is recorded here and in the TXT/JSON exports.</p></div>
+      {{ idbar('PDF SHA-256', pdf.pdf_sha256, 'pdf-sha') }}
     {% else %}
       <p class="small muted">The PDF report has not been generated yet; it is generated and hashed on first download.</p>
     {% endif %}
-    <div>{{ copy_field('SHA-256 of the original uploaded image', f.sha256, 'img-sha') }}
-      <p class="small muted gap-top">Stored copy:
-        {% if storage_check == 'verified' %}Re-hashed on opening this report: matches.
-        {% elif storage_check == 'missing' %}<strong>missing</strong>.
-        {% else %}<strong>no longer matches the recorded hash</strong>.{% endif %}</p></div>
-  </div>
-  {% if pdf.pdf_sha256 %}
-  <div class="verify-form">
-    <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="btn btn-sm" type="submit">Re-check stored PDF</button>
-    </form>
-    <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}" enctype="multipart/form-data" class="row">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <label class="visually-hidden" for="report-file">PDF to check</label>
-      <input id="report-file" name="report_file" type="file" accept=".pdf,application/pdf" required>
-      <button class="btn btn-sm" type="submit">Check a PDF copy</button>
-    </form>
-  </div>
-  {% endif %}
-  {% if audit %}
-  <details class="gap-top">
-    <summary class="small">Audit trail ({{ audit|length }})</summary>
-    <div class="table-wrap gap-top"><table class="table-compact">
-      <thead><tr><th>Time (UTC)</th><th>Event</th><th>Outcome</th><th>File SHA-256</th></tr></thead>
-      <tbody>{% for a in audit %}
-        <tr><td>{{ a.created_at|when }}</td><td>{{ a.event_type.replace('report_', '') }}</td><td>{{ a.outcome }}</td>
-          <td class="hash">{{ (a.report_sha256 or '—')[:16] }}{% if a.report_sha256 %}…{% endif %}</td></tr>
-      {% endfor %}</tbody>
-    </table></div>
-  </details>
-  {% endif %}
-</section>
+    {{ idbar('Image SHA-256', f.sha256, 'img-sha') }}
+    <p class="small muted section-gap">Stored image: {% if storage_check == 'verified' %}Re-hashed on opening this report: matches.{% elif storage_check == 'missing' %}missing.{% else %}does not match the recorded hash.{% endif %}
+      {% if pdf.pdf_sha256 %} PDF hash recorded {{ pdf.pdf_generated_at|when }}; a file cannot contain its own hash.{% endif %}</p>
 
-<section class="panel split" aria-label="Result">
-  <div class="media">
-    {% if previewable %}<img src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded image">
-    {% else %}<p class="muted small">Browsers cannot display {{ f.detected_format }}.</p>{% endif %}
-  </div>
-  <div>{{ verdict(rep.ai_detection) }}</div>
-</section>
-
-<div class="accordion gap-top">
-  <details open>
-    <summary>Assessment <span class="meta">{{ level_badge(rep.preliminary_assessment.level) }}</span></summary>
-    <div class="body"><p>{{ rep.preliminary_assessment.text }}</p>
-      <p class="small muted">{{ rep.assessment_type }}</p></div>
-  </details>
-  <details>
-    <summary>AI model output <span class="meta">{{ rep.ai_detection.status }}</span></summary>
-    <div class="body">{{ raw_output(rep.ai_detection) }}
-      {% if rep.ai_detection.known_limitations or rep.ai_model.known_limitations %}
-      <ul class="list gap-top">{% for l in rep.ai_detection.known_limitations or rep.ai_model.known_limitations %}<li class="small">{{ l }}</li>{% endfor %}</ul>
-      {% endif %}</div>
-  </details>
-  <details>
-    <summary>Heuristic findings <span class="meta">caution score {{ heur.caution_score }}/100 · {{ heur.caution_band }}</span></summary>
-    <div class="body"><p class="small muted">Rule-weight sum, not a probability. Bands: low &lt; 15, moderate 15–39, elevated ≥ 40.</p>
-      {{ findings(heur.findings) }}
-      {% if heur.ela and r.derived_filename %}
-      <div class="ela gap-top"><h3 class="gap-bottom">Error Level Analysis</h3>
-        <img src="{{ url_for('evidence_file', record_id=r.id, kind='ela') }}" alt="Error level analysis of the uploaded image">
-        <p class="small muted gap-top">Visual aid only, not scored. Edges and texture are naturally bright.</p></div>
-      {% endif %}</div>
-  </details>
-  <details>
-    <summary>Consistency observations <span class="meta">{{ rep.consistency.observations|length }}</span></summary>
-    <div class="body">{{ observations(rep.consistency.observations) }}
-      <h3 class="gap-top gap-bottom">Recommended next steps</h3>
-      <ol class="small">{% for step in rep.consistency.recommended_checks %}<li>{{ step }}</li>{% endfor %}</ol></div>
-  </details>
-  <details>
-    <summary>Metadata <span class="meta">{{ md.exif_tag_count }} EXIF tags</span></summary>
-    <div class="body stack">
-      <div><h3 class="gap-bottom">Key fields</h3>{{ kv_table(md.key_fields, '', true) }}</div>
-      <div><h3 class="gap-bottom">Image</h3>{{ kv_table(md.image, '', true) }}</div>
-      <div><h3 class="gap-bottom">EXIF</h3>{{ kv_table(md.exif, 'No EXIF tags. Missing metadata is common and is not evidence of manipulation.') }}</div>
-      {% if md.exif_sub_ifd %}<div><h3 class="gap-bottom">EXIF sub-IFD</h3>{{ kv_table(md.exif_sub_ifd, '') }}</div>{% endif %}
-      {% if md.gps %}<div><h3 class="gap-bottom">GPS</h3>{{ kv_table(md.gps, '') }}</div>{% endif %}
-      {% if md.embedded_text %}<div><h3 class="gap-bottom">Embedded text</h3>{{ kv_table(md.embedded_text, '') }}</div>{% endif %}
-      <div><h3 class="gap-bottom">Containers</h3>{{ kv_table(md.containers, '') }}</div>
-      {% if md.errors %}<p class="alert alert-warn">Extraction errors: {{ md.errors|join('; ') }}</p>{% endif %}
-      <div><h3 class="gap-bottom">File</h3><dl class="kv"><dt>MD5 (reference)</dt><dd class="hash">{{ f.md5 }}</dd>
-        <dt>Extension</dt><dd>.{{ f.extension }}{% if not f.extension_matches_content %} (does not match content){% endif %}</dd></dl></div>
+    {% if pdf.pdf_sha256 %}
+    <div class="verify-row">
+      <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm" type="submit">Re-check stored PDF</button>
+      </form>
+      <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label class="visually-hidden" for="report-file">PDF to check</label>
+        <input id="report-file" name="report_file" type="file" accept=".pdf,application/pdf" required>
+        <button class="btn btn-sm" type="submit">Check a PDF copy</button>
+      </form>
     </div>
-  </details>
-  <details>
-    <summary>Limitations</summary>
-    <div class="body"><ul class="list">{% for l in rep.limitations %}<li class="small">{{ l }}</li>{% endfor %}</ul>
-      <p class="small muted gap-top">{{ rep.custody_note }}</p></div>
-  </details>
-</div>
+    {% endif %}
 
-<div class="row gap-top">
+    {% if audit %}
+    <details class="section-gap">
+      <summary class="small muted">Audit trail ({{ audit|length }})</summary>
+      <ol class="timeline">
+        {% for a in audit %}
+        <li class="{{ 'is-bad' if a.outcome in ('refused', 'mismatch', 'missing') else ('is-ok' if a.outcome == 'match' else '') }}">
+          <span class="when">{{ a.created_at|when }}</span>{{ a.event_type.replace('report_', '')|capitalize }} · {{ a.outcome }}
+        </li>
+        {% endfor %}
+      </ol>
+    </details>
+    {% endif %}
+  </section>
+
+  {{ status_banner(rep.ai_detection) }}
+  <div class="grid grid-result">
+    {{ metric(rep.ai_detection) }}
+    {{ recommendation(rep) }}
+  </div>
+  {{ signals(rep, full=true) }}
+
   <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-danger btn-sm">Delete record</button>

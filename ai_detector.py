@@ -71,8 +71,8 @@ REVIEWED_MODELS = {
             "Fine-tuned on about 60,000 AI-generated and 60,000 human images (per the model card); the "
             "exact generators and photo sources are not documented.",
             "The model card notes that some users reported overfitting. On this project's evaluation set it "
-            "labelled 8 of 20 validation real photographs as AI-generated (camera-dependent: Fujifilm, Google "
-            "Pixel and Sony photos scored about 99%), and 3 of 40 on the test split.",
+            "labelled 8 of 20 validation real photographs as AI-generated (camera-dependent: Nikon D5200, Google "
+            "Pixel and Sony ILCE-7 photos scored about 99%), and 3 of 40 on the test split.",
             "Input is squashed to 224x224, so small pixel-level artefacts are not visible to the model.",
         ],
     },
@@ -149,6 +149,7 @@ class AIDetector:
             "state": self.state,
             "model_id": self.model_id,
             "display_name": (self.reviewed or {}).get("display_name", self.model_id),
+            "license": (self.reviewed or {}).get("license"),
             "revision": self.revision,
             "error": self.error,
             "known_limitations": self.known_limitations(),
