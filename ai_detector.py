@@ -83,8 +83,7 @@ SCORE_NOTE = ("The AI-generated score is this model's output for the 'AI-generat
               "training data, and it can be confidently wrong on images unlike that data (new generators, "
               "heavy compression, screenshots, resized or edited photos).")
 CONFIDENCE_NOTE = ("Not independently calibrated. The AI-generated and real-image scores are two views of "
-                   "the same model output (they sum to 100%); the model card reports no calibration study, "
-                   "so no separate confidence value is shown.")
+                   "the same model output (they sum to 100%); the model card reports no calibration study.")
 
 
 def decision_rule_text(band):
@@ -274,7 +273,7 @@ class AIDetector:
             "decision_rule": decision_rule_text(self.band),
             "inconclusive_band": list(self.band) if self.band else None,
             "known_limitations": self.known_limitations(),
-            # The model emits only class scores; no separate confidence measure exists.
+            # No calibrated confidence exists; model certainty (top_score) is the model's own score.
             "confidence": None,
             "confidence_note": CONFIDENCE_NOTE,
         }
@@ -295,6 +294,10 @@ class AIDetector:
         result.update(ai_score=ai_score, real_score=round(1 - ai_score, 6),
                       predicted_class={"ai": "ai_generated", "real": "not_ai_generated"}.get(call, "inconclusive"),
                       prediction_label=PREDICTION_LABELS[call])
+        if mapping["kind"] == "softmax":
+            # Model certainty: the highest class softmax score, exactly as the model produced it.
+            top = max(scores, key=lambda s: s["score"])
+            result.update(top_score=top["score"], top_label=top["label"])
         return result
 
 

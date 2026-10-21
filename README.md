@@ -78,7 +78,7 @@ Optional – rebuild the labelled evaluation set (about 300 MB from Wikimedia Co
 |---|---|---|
 | Dashboard | `/` | One primary action (upload), model status, totals, recent analyses or an empty state |
 | Upload | `/upload` | One dropzone (drag-and-drop or browse), formats and size limit on one line, preview, upload progress, then an "Analysing" state |
-| Results | `/analysis/<id>` | Image with ELA overlay toggle; status banner (Likely AI-generated / Likely real / Inconclusive); AI score tile with both scores and "Not independently calibrated"; What this means / Why / Next step; model and revision; copyable SHA-256 and report ID; expandable signal groups (AI output, Metadata, Heuristics, Consistency, Limitations) |
+| Results | `/analysis/<id>` | Image with ELA overlay toggle; status banner (Likely AI-generated / Likely real / Inconclusive); AI score tile with both scores, "Not independently calibrated" and the model-certainty block; What this means / Why / Next step; model and revision; copyable SHA-256 and report ID; expandable signal groups (AI output, Metadata, Heuristics, Consistency, Limitations) |
 | Detailed report | `/report/<id>` | TXT / JSON / PDF downloads; report-integrity block (PDF SHA-256, original image SHA-256, re-check, check a PDF copy, audit trail); accordion with model output, findings, ELA, observations, metadata, limitations; delete |
 | History | `/history` | Table with thumbnails, verdict and assessment badges; search (filename, SHA-256, report ID) with a verdict filter; delete with confirmation; empty states |
 | Methodology | `/methodology` | Numbered accordion with one-line explanations: validation, hashing, metadata, AI detector, heuristics, consistency, report integrity, measured accuracy, limitations |
@@ -135,8 +135,13 @@ How the app uses it (`ai_detector.py`):
 - **Prediction rule:** AI-generated score above 50% → *Likely AI-generated*, otherwise *Likely real*. The app supports an
   *Inconclusive* band as a display rule, but none is used: on the validation split no band reduced wrong calls, because
   every score from this model was below 5% or above 95%.
-- **Model confidence** is shown as *"Not independently calibrated"*: no separate confidence value is invented, and the
-  AI score is not relabelled as confidence.
+- **Model certainty** (shown as *Confidence*, cyan, below the score tile) is the model's highest class softmax score,
+  stored with each result as `top_score` and never recomputed. It is the model's own score, not a probability of being
+  correct, and it can be high on wrong results. When `evaluation/results.json` covers the same model and revision, the
+  tile adds how often test-split predictions in the same certainty band (50-70, 70-90, 90-100%) were correct, only if
+  that band holds at least 10 test images; otherwise nothing is estimated. Reports store it under `certainty`
+  (`model_certainty`, `certainty_note`, `calibration_note`, optional `empirical_accuracy_bin` with `n`). It is never
+  combined with the caution score, and is omitted when AI analysis is unavailable and for reports made before v1.2.
 - If torch/transformers are missing, the weights cannot be downloaded, or inference throws, every page and report says
   **"AI analysis unavailable"** and no scores are stored (`ai_score` and `real_score` are `NULL`). Heuristics are never
   substituted.

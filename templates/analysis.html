@@ -19,7 +19,7 @@
   {{ image_review(r, rep, previewable) }}
   {{ status_banner(rep.ai_detection) }}
   <div class="grid grid-result">
-    {{ metric(rep.ai_detection) }}
+    {{ metric(rep.ai_detection, rep.certainty) }}
     {{ recommendation(rep) }}
   </div>
   <div>

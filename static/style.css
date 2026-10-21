@@ -23,6 +23,7 @@
   --warn: #f5a524;   --warn-soft: rgba(245, 165, 36, 0.12);
   --bad: #f05252;    --bad-soft: rgba(240, 82, 82, 0.12);
   --violet: #a78bfa; --violet-soft: rgba(167, 139, 250, 0.13);
+  --cyan: #22d3ee;   /* model certainty only; about 11:1 on --surface */
   --r-sm: 8px; --r: 12px; --r-lg: 16px;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px;
   --fs-xs: 12px; --fs-sm: 14px; --fs-md: 16px; --fs-lg: 20px; --fs-xl: 28px; --fs-2xl: 40px;
@@ -136,6 +137,14 @@ main.wrap { padding-top: var(--s6); padding-bottom: var(--s7); }
 .bar { height: 6px; background: var(--surface-3); border-radius: 999px; overflow: hidden; }
 .bar-fill { height: 100%; width: 0; background: var(--accent); border-radius: 999px; transition: width .3s; }
 .bar-fill.is-ai { background: var(--violet); } .bar-fill.is-real { background: var(--ok); }
+.bar-fill.is-cyan { background: var(--cyan); transition: none; }
+.certainty { width: 100%; text-align: left; border-top: 1px solid var(--border); margin-top: var(--s2); padding-top: var(--s3); }
+.certainty-head { display: flex; align-items: center; gap: var(--s2); margin-bottom: 6px; }
+.certainty-head .eyebrow { color: var(--cyan); }
+.certainty-value { margin-left: auto; color: var(--cyan); font: 500 var(--fs-md) var(--mono); }
+.certainty .bar { height: 4px; }
+.certainty p { margin: 6px 0 0; }
+.certainty-caption { color: var(--muted); }
 .score-row { display: flex; justify-content: space-between; font-size: var(--fs-xs); color: var(--muted); margin: var(--s3) 0 6px; }
 .score-row b { color: var(--text); font: 500 var(--fs-xs) var(--mono); }
 

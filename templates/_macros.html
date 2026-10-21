@@ -54,7 +54,7 @@
 {%- endmacro %}
 
 {# Model output only; never combined with the heuristic caution score. #}
-{% macro metric(ai) -%}
+{% macro metric(ai, cert=None) -%}
   <div class="card metric">
     <div class="eyebrow is-muted">AI-generated score</div>
     {% if ai.status == 'ok' and ai.ai_score is not none %}
@@ -67,11 +67,25 @@
         <div class="bar" role="progressbar" aria-label="Real-image score" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ '%.1f'|format(ai.real_score * 100) }}"><div class="bar-fill is-real" data-width="{{ '%.2f'|format(ai.real_score * 100) }}"></div></div>
         {% endif %}
       </div>
-      <p class="small muted">Not independently calibrated {{ tip(ai.confidence_note ~ ' ' ~ ai.decision_rule, 'tip-scores', 'About these scores') }}</p>
+      <p class="small muted">{{ cert.calibration_note if cert else 'Not independently calibrated' }} {{ tip(ai.confidence_note ~ ' ' ~ ai.decision_rule, 'tip-scores', 'About these scores') }}</p>
+      {% if cert %}{{ certainty_block(cert) }}{% endif %}
     {% else %}
       <div class="value">—</div>
       <p class="small muted">AI analysis unavailable</p>
     {% endif %}
+  </div>
+{%- endmacro %}
+
+{# The model's own top class score; never an "authenticity score" or an AI-generated probability. #}
+{% macro certainty_block(cert) -%}
+  {%- set v = '%.1f'|format(cert.model_certainty * 100) -%}
+  <div class="certainty" data-certainty="{{ cert.model_certainty }}">
+    <div class="certainty-head"><span class="eyebrow">Confidence</span>
+      {{ tip(cert.certainty_note, 'tip-certainty', 'About model certainty') }}
+      <b class="certainty-value">{{ v }}%</b></div>
+    <div class="bar" role="progressbar" aria-label="Model certainty {{ v }}%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ v }}"><div class="bar-fill is-cyan" data-width="{{ '%.2f'|format(cert.model_certainty * 100) }}"></div></div>
+    <p class="small certainty-caption">{{ cert.label }}: the model's score for its predicted class</p>
+    {% if cert.empirical_accuracy_bin %}<p class="small muted" data-empirical>{{ empirical_text(cert.empirical_accuracy_bin) }}</p>{% endif %}
   </div>
 {%- endmacro %}
 

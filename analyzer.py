@@ -8,6 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 
+import certainty
 import consistency
 import heuristics
 import report_store
@@ -61,7 +62,8 @@ def analyse_upload(filename, data, *, config, db, detector):
             report_id=report_id, original_filename=display_filename(filename),
             received_at=received, file_info=file_info, metadata=metadata, identity=identity,
             ai=ai, heuristics_result=heur, consistency_result=cross,
-            detector_status=detector.status())
+            detector_status=detector.status(),
+            certainty_result=certainty.build(ai, config["EVALUATION_FILE"]))
 
         db.insert({
             "id": report_id,

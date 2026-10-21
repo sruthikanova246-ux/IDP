@@ -4,9 +4,11 @@ import re
 import textwrap
 from datetime import datetime, timezone
 
+import certainty
+
 APP_NAME = "Digital Evidence Integrity System"
-APP_VERSION = "1.1.0"
-SCHEMA_VERSION = "1.1"
+APP_VERSION = "1.2.0"
+SCHEMA_VERSION = "1.2"
 
 ASSESSMENT_TYPE = "Preliminary automated assessment - not a verification of authenticity"
 
@@ -33,8 +35,8 @@ def iso(dt):
 
 
 def build_report(*, report_id, original_filename, received_at, file_info, metadata, identity,
-                 ai, heuristics_result, consistency_result, detector_status):
-    return {
+                 ai, heuristics_result, consistency_result, detector_status, certainty_result=None):
+    report = {
         "report_id": report_id,
         "schema_version": SCHEMA_VERSION,
         "generated_at": iso(datetime.now(timezone.utc)),
@@ -65,6 +67,9 @@ def build_report(*, report_id, original_filename, received_at, file_info, metada
         "limitations": LIMITATIONS,
         "custody_note": CUSTODY_NOTE,
     }
+    if certainty_result:  # absent when AI analysis was unavailable and in reports made before v1.2
+        report["certainty"] = certainty_result
+    return report
 
 
 def to_json(report):
@@ -123,12 +128,19 @@ def to_txt(report):
     out += [f"Model:     {ai.get('model_id') or model.get('model_id')}",
             f"Revision:  {ai.get('commit_hash') or ai.get('revision') or model.get('commit_hash') or model.get('revision')}",
             f"Status:    {ai['status']}"]
+    cert = report.get("certainty")
     if ai["status"] == "ok":
         out += [f"Prediction:          {ai['prediction_label']}",
                 f"AI-generated score:  {pct(ai.get('ai_score'))}",
                 f"Real-image score:    {pct(ai.get('real_score'))}",
-                "Model confidence:    Not independently calibrated (only class scores are available)",
-                f"Decision rule:       {ai['decision_rule']}",
+                f"Calibration:         {cert['calibration_note'] if cert else certainty.NOT_CALIBRATED}"]
+        if cert:
+            out.append(f"{cert['label'] + ':':<21}{certainty.fmt(cert['model_certainty'])}")
+            out += textwrap.wrap(cert["certainty_note"], 78, initial_indent="  ", subsequent_indent="  ")
+            if cert.get("empirical_accuracy_bin"):
+                out += textwrap.wrap(certainty.empirical_text(cert["empirical_accuracy_bin"]) + ".", 78,
+                                     initial_indent="  ", subsequent_indent="  ")
+        out += [f"Decision rule:       {ai['decision_rule']}",
                 f"Output mapping:      {ai.get('output_mapping', 'softmax over the model classes')}",
                 f"Raw model output ({ai.get('output_type', 'softmax')}):"]
         for s in ai["scores"]:

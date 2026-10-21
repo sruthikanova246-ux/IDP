@@ -36,23 +36,37 @@
       </dl>
     </div>
   </details>
+  <details id="certainty">
+    <summary><span class="n">05</span><span class="t">Model certainty</span><span class="meta">shown as "Confidence"</span></summary>
+    <div class="body">
+      <p>The detector's highest class score for its prediction (its softmax output), shown exactly as stored with the result. For the two-class model this is the larger of the AI-generated and real-image scores.</p>
+      <p class="small">{{ certainty.CERTAINTY_NOTE }}</p>
+      <ul class="items">
+        <li class="small">Not a probability of being correct and not an AI-generated probability. Never combined with the heuristic caution score.</li>
+        <li class="small">Unchanged by the verdict: an Inconclusive result shows the same certainty the model produced.</li>
+        <li class="small">If the evaluated model and revision match, the result also shows how often test-split predictions in the same certainty band ({% for lo, hi in certainty.BINS %}{{ (lo * 100)|int }}–{{ (hi * 100)|int }}%{{ ', ' if not loop.last }}{% endfor %}) were correct. Shown only when the band has at least {{ certainty.MIN_BIN_N }} test images; never estimated.</li>
+        <li class="small">The test split is small and 20 of its 40 real images are processed copies (resized, screenshot, messaging-app) of the other 20, so those images are not independent. Every evaluation score of the current model was below 5% or above 95%, so in practice only the 90–100% band has data.</li>
+        <li class="small">Not shown when AI analysis is unavailable, for models whose output is not a mapped softmax, or for reports created before this field existed.</li>
+      </ul>
+    </div>
+  </details>
   <details>
-    <summary><span class="n">05</span><span class="t">Heuristics</span><span class="meta">caution score</span></summary>
+    <summary><span class="n">06</span><span class="t">Heuristics</span><span class="meta">caution score</span></summary>
     <div class="body"><p>Sum of rule weights, capped at 100. Not a probability; never combined with the AI score.</p>
       <div class="table-wrap"><table class="table-compact"><thead><tr><th>Rule</th><th>Weight</th></tr></thead>
         <tbody>{% for k, v in weights.items() %}<tr><td>{{ k.replace('_', ' ')|capitalize }}</td><td class="num">+{{ v }}</td></tr>{% endfor %}</tbody></table></div></div>
   </details>
   <details>
-    <summary><span class="n">06</span><span class="t">Consistency</span></summary>
+    <summary><span class="n">07</span><span class="t">Consistency</span></summary>
     <div class="body"><p>Rules compare the detector with metadata and file identity, and list agreements, conflicts and next steps.</p></div>
   </details>
   <details>
-    <summary><span class="n">07</span><span class="t">Report integrity</span><span class="meta">tamper-evident</span></summary>
+    <summary><span class="n">08</span><span class="t">Report integrity</span><span class="meta">tamper-evident</span></summary>
     <div class="body"><p>Each PDF is stored once and its SHA-256 recorded. Downloads are refused if the hash no longer matches.</p>
       <p class="small">Tamper-evident, not tamper-proof: someone who can also edit the database could change both. Not a legal chain of custody.</p></div>
   </details>
   <details id="evaluation">
-    <summary><span class="n">08</span><span class="t">Measured accuracy</span><span class="meta">{% if evaluation %}{{ evaluation.generated_at[:10] }}{% endif %}</span></summary>
+    <summary><span class="n">09</span><span class="t">Measured accuracy</span><span class="meta">{% if evaluation %}{{ evaluation.generated_at[:10] }}{% endif %}</span></summary>
     <div class="body">
     {% if evaluation %}
       {% set d = evaluation.dataset %}
@@ -73,7 +87,7 @@
     </div>
   </details>
   <details>
-    <summary><span class="n">09</span><span class="t">Limitations</span><span class="meta">{{ limitations|length + 1 }}</span></summary>
+    <summary><span class="n">10</span><span class="t">Limitations</span><span class="meta">{{ limitations|length + 1 }}</span></summary>
     <div class="body"><ul class="items">{% for l in limitations %}<li class="small">{{ l }}</li>{% endfor %}
       <li class="small">Report hashes are tamper-evident, not tamper-proof.</li></ul></div>
   </details>

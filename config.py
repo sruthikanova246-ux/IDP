@@ -57,12 +57,14 @@ def load_config(overrides=None):
         "AI_LOCAL_FILES_ONLY": _env_bool("DEI_MODEL_LOCAL_ONLY", False),
         # Start loading the model in a background thread when the server starts.
         "AI_PRELOAD": _env_bool("DEI_MODEL_PRELOAD", True),
+        # Measured detector results (evaluation/compare_models.py), used for the empirical certainty line.
+        "EVALUATION_FILE": BASE_DIR / "evaluation" / "results.json",
         "HOST": os.environ.get("DEI_HOST", "127.0.0.1"),
         "PORT": int(os.environ.get("DEI_PORT", "5000")),
         "TESTING": False,
     }
     cfg.update(overrides)
-    for key in ("UPLOAD_DIR", "DERIVED_DIR", "REPORTS_DIR", "DATABASE_PATH", "LOG_PATH"):
+    for key in ("UPLOAD_DIR", "DERIVED_DIR", "REPORTS_DIR", "DATABASE_PATH", "LOG_PATH", "EVALUATION_FILE"):
         cfg[key] = Path(cfg[key])
     for key in ("UPLOAD_DIR", "DERIVED_DIR", "REPORTS_DIR"):
         cfg[key].mkdir(parents=True, exist_ok=True)

@@ -11,6 +11,7 @@ from flask import (Flask, Response, abort, flash, jsonify, redirect, render_temp
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 import analyzer
+import certainty
 import report_store
 import reports
 from ai_detector import AIDetector, CONFIDENCE_NOTE, SCORE_NOTE
@@ -56,13 +57,10 @@ def _setup_logging(app):
 
 
 # --------------------------------------------------------------------- helpers
-EVALUATION_FILE = Path(__file__).resolve().parent / "evaluation" / "results.json"
-
-
-def _load_evaluation():
+def _load_evaluation(path):
     """Measured detector results (evaluation/compare_models.py); None if not generated."""
     try:
-        data = json.loads(EVALUATION_FILE.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
     data.pop("per_image", None)
@@ -92,7 +90,7 @@ def _valid_id_or_404(record_id):
 
 
 def _register_helpers(app):
-    app.jinja_env.globals.update(csrf_token=_csrf_token)
+    app.jinja_env.globals.update(csrf_token=_csrf_token, empirical_text=certainty.empirical_text)
 
     @app.template_filter("pct")
     def pct_filter(value, digits=1):
@@ -260,7 +258,8 @@ def _register_routes(app):
 
     @app.get("/methodology")
     def methodology():
-        return render_template("methodology.html", evaluation=_load_evaluation(), limitations=reports.LIMITATIONS,
+        return render_template("methodology.html", evaluation=_load_evaluation(app.config["EVALUATION_FILE"]),
+                               certainty=certainty, limitations=reports.LIMITATIONS,
                                custody_note=reports.CUSTODY_NOTE, weights=WEIGHTS,
                                score_note=SCORE_NOTE,
                                confidence_note=CONFIDENCE_NOTE)
