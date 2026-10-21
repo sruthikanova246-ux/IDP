@@ -61,7 +61,7 @@ Optional – rebuild the labelled evaluation set (about 300 MB from Wikimedia Co
 | Variable | Default | Purpose |
 |---|---|---|
 | `DEI_SECRET_KEY` | random, saved to `instance/secret_key` | Flask session/CSRF signing key |
-| `DEI_HOST` / `DEI_PORT` | `127.0.0.1` / `5000` | Bind address (keep localhost for the demo) |
+| `DEI_HOST` / `DEI_PORT` | local machine only | Bind address and port |
 | `DEI_MAX_UPLOAD_MB` | `20` | Upload size limit |
 | `DEI_MAX_IMAGE_PIXELS` | `80000000` | Decompression-bomb limit |
 | `DEI_AI_ENABLED` | `1` | Set `0` to run metadata/hash analysis only |
@@ -327,7 +327,7 @@ of custody.
 
 ## Security measures
 
-- Server bound to `127.0.0.1` by default; Flask debug mode off.
+- Server reachable only from the local machine by default; Flask debug mode off.
 - Extension allow-list, size limit (`MAX_CONTENT_LENGTH` → HTTP 413), full Pillow decode, decompression-bomb pixel limit,
   decoded format must be an allowed image format.
 - Uploads stored under random names (`DEI-YYYYMMDD-<12 hex>.<ext>`) in `instance/uploads`; files are served only by
