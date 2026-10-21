@@ -31,7 +31,7 @@ This creates `.venv`, installs the dependencies (CPU-only PyTorch), downloads an
 run_windows.bat
 ```
 
-This starts the server on **http://127.0.0.1:5000/** (localhost only) and opens your browser.
+This starts the server on your machine only and opens it in your browser.
 
 Manual equivalent:
 

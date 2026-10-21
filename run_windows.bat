@@ -1,5 +1,5 @@
 @echo off
-REM Start the Digital Evidence Integrity System on http://127.0.0.1:5000/
+REM Start the Digital Evidence Integrity System
 cd /d "%~dp0"
 
 if not exist .venv\Scripts\python.exe (
