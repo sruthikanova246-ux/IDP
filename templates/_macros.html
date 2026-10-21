@@ -6,7 +6,8 @@
 
 {% macro level_badge(level) -%}
   {%- set labels = {'review': 'Further review recommended', 'conflicting': 'Conflicting evidence',
-                    'no_strong_indicators': 'No strong indicators', 'limited': 'Limited (no AI result)'} -%}
+                    'no_strong_indicators': 'No strong indicators', 'limited': 'Limited (no AI result)',
+                    'inconclusive': 'Classifier inconclusive'} -%}
   <span class="badge level-{{ level }}">{{ labels.get(level, level) }}</span>
 {%- endmacro %}
 
@@ -41,19 +42,19 @@
       <dt>Raw output</dt>
       <dd>
         <table class="mini">
-          <thead><tr><th>Class</th><th>Label</th><th>Logit</th><th>Softmax</th></tr></thead>
+          <thead><tr><th>Output</th><th>Label</th><th>Logit</th><th>Score</th></tr></thead>
           <tbody>
           {% for s in ai.scores %}
-            <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td>{{ '%.4f'|format(s.logit) }}</td><td>{{ '%.6f'|format(s.softmax) }}</td></tr>
+            <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td>{{ '%.4f'|format(s.logit) }}</td><td>{{ '%.6f'|format(s.score if s.score is defined else s.softmax) }}</td></tr>
           {% endfor %}
           </tbody>
         </table>
       </dd>
-      <dt>Inference</dt><dd>{{ ai.inference_ms }} ms on CPU, input resized to {{ ai.model_input_size }}</dd>
+      <dt>Inference</dt><dd>{{ ai.inference_ms }} ms on CPU; model input {{ ai.model_input_size }}</dd>
     </dl>
     <div class="note">
-      <strong>How to read these scores.</strong> The two class scores come from one softmax and always sum to 100%;
-      they are not two independent measurements. {{ ai.score_note }} Model errors are possible in both directions.
+      <strong>How to read these scores.</strong> The AI-generated and real-image scores come from one model output and
+      always sum to 100%; they are not two independent measurements.{% if ai.output_mapping %} {{ ai.output_mapping }}{% endif %} {{ ai.score_note }} Model errors are possible in both directions.
     </div>
   {% else %}
     <p class="alert alert-warn" role="status"><strong>AI analysis unavailable.</strong>

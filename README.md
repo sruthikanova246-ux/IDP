@@ -25,7 +25,7 @@ setup_windows.bat
 ```
 
 This creates `.venv`, installs the dependencies (CPU-only PyTorch), downloads and smoke-tests the AI model
-(about 370 MB, cached in `%USERPROFILE%\.cache\huggingface`) and generates demo images in `samples\`.
+(about 330 MB, cached in `%USERPROFILE%\.cache\huggingface`) and generates demo images in `samples\`.
 
 ```bat
 run_windows.bat
@@ -47,6 +47,13 @@ Run the tests:
 
 ```bat
 .venv\Scripts\python -m pytest -v
+```
+
+Optional – rebuild the labelled evaluation set (about 300 MB from Wikimedia Commons) and re-run the model comparison:
+
+```bat
+.venv\Scripts\python tests\eval_data\build_eval_set.py
+.venv\Scripts\python -m evaluation.compare_models
 ```
 
 ### Configuration (environment variables)
@@ -80,44 +87,126 @@ Run the tests:
 
 ## AI model
 
-**`Ateeqq/ai-vs-human-image-detector`**, pinned to commit `60e82406916921b823616bee33397baab38af3f0`.
+**`Smogy/SMOGY-Ai-images-detector`** (Swin Transformer, 86.7M parameters), pinned to commit
+`fb9aadb85642d707f05b40191689d60f75b9a3e6`. Chosen in October 2026 by a measured comparison of eight pretrained
+detectors (see [Evaluation](#evaluation)); it replaced `Ateeqq/ai-vs-human-image-detector`, which labelled real
+photographs as AI-generated.
 
-What was reviewed before choosing it (from its Hugging Face model card and config):
+From its model card and config:
 
-- **Architecture:** `SiglipForImageClassification` (SigLIP vision encoder, 92.9M parameters), input 224×224, normalisation mean/std 0.5.
-- **Labels:** `0 = "ai"`, `1 = "hum"` (human). These map to the app's *AI-generated* and *Real-image* scores.
-- **License:** Apache-2.0.
-- **Training:** fine-tuned on about 60,000 AI-generated and 60,000 human images; the card reports 99.23% accuracy on the author's own held-out split.
-- **Caveat stated on the card:** "Some users reported overfitting issues".
-
-Alternatives examined: `haywoodsloan/ai-image-detector-deploy` (SwinV2, Apache-2.0, 780 MB, card contains only AutoTrain metrics),
-`umm-maybe/AI-image-detector` (trained mainly on art, 2022-era generators), `Organika/sdxl-detector` (non-commercial license),
-`dima806/ai_vs_real_image_detection` (CIFAKE 32×32 data, unsuitable for photographs).
+- **Labels:** `0 = "artificial"`, `1 = "human"`. AI-generated score = softmax of `artificial`; real-image score = softmax of `human`.
+- **Training:** fine-tuned from `Organika/sdxl-detector` on about 50,000 images from Reddit, Kaggle and public-domain art.
+  The card reports 98.2% on its own test split and 76–91% on generator families outside its training data.
+- **License: CC BY-NC 4.0 – non-commercial use only.** Acceptable for this college project; do not use it commercially.
+  Its ancestor `umm-maybe/AI-image-detector` states CC BY-ND 4.0 on its card, so the licensing of the derivative chain is
+  uncertain. If you need a permissive license, the best Apache-2.0 option on validation was
+  `haywoodsloan/ai-image-detector-deploy` (set `DEI_MODEL_ID` / `DEI_MODEL_REVISION`; its test accuracy was not measured).
 
 How the app uses it (`ai_detector.py`):
 
 - Loaded **once** per process (background thread at startup, guarded by a lock) and reused.
-- EXIF orientation applied, transparency flattened on white, first frame of animations; then the model's own `AutoImageProcessor`.
-- Reports: AI-generated score, Real-image score (softmax of the two classes, which always sum to 100%), raw logits,
-  prediction label (`Likely AI-generated` / `Likely real` by argmax, i.e. >50%), model ID, revision, inference time.
-- **Model confidence** is shown as *"Not independently calibrated"*: the model outputs only class scores, the card reports no
-  calibration study, so no separate confidence value is invented, and the AI score is not relabelled as confidence.
-- If torch/transformers are missing, the weights cannot be downloaded, or inference throws, the result is
-  `unavailable` / `error` and every page and report says **"AI analysis unavailable"**. No scores are stored
-  (`ai_score` and `real_score` are `NULL`), and heuristics are never substituted.
+- EXIF orientation applied, transparency flattened on white, first frame of animations; then the model's own image
+  processor (224×224). The Pillow preprocessing backend is pinned so results do not change if `torchvision` is installed.
+- The AI score is always read from the label that **means** AI (by name, never by position). Models with one "real" label
+  and several generator labels use 1 − P(real). Single-logit models are only interpreted when a reviewed card documents
+  the output; anything else is shown as raw output with no AI score.
+- Reports: AI-generated score, Real-image score (they sum to 100%), raw logits and scores, prediction label, model ID,
+  revision, inference time.
+- **Prediction rule:** AI-generated score above 50% → *Likely AI-generated*, otherwise *Likely real*. The app supports an
+  *Inconclusive* band as a display rule, but none is used: on the validation split no band reduced wrong calls, because
+  every score from this model was below 5% or above 95%.
+- **Model confidence** is shown as *"Not independently calibrated"*: no separate confidence value is invented, and the
+  AI score is not relabelled as confidence.
+- If torch/transformers are missing, the weights cannot be downloaded, or inference throws, every page and report says
+  **"AI analysis unavailable"** and no scores are stored (`ai_score` and `real_score` are `NULL`). Heuristics are never
+  substituted.
 
-### Observed behaviour (real runs on this machine)
+### Observed behaviour on non-photographic inputs (measured with the current model)
 
-| Input | AI-generated score | Real-image score | Comment |
-|---|---|---|---|
-| `samples/*` (four scenes drawn with Pillow) | 99.92–99.94% | 0.06–0.08% | They are computer-generated graphics, so "not a camera photo" is fair, but they are not diffusion output |
-| Flat grey 256×256 image | 99.88% | 0.12% | No content at all, yet a near-certain score |
-| Browser-canvas gradient with random noise (JPEG) | 0.2% | 99.8% | Synthetic, yet scored "Likely real" with high certainty |
+| Input | AI-generated score | Prediction |
+|---|---|---|
+| `samples/*` (four scenes drawn with Pillow) | 0.00% | Likely real |
+| Flat grey 256×256 image | 0.00% | Likely real |
+| Uniform random noise 640×480 | 18.58% | Likely real |
 
-These are a direct demonstration of why the scores must be read as **model outputs, not probabilities**: on inputs
-unlike its training data the model is confidently wrong in either direction. The included samples test the
-*workflow*; they cannot be used to measure accuracy. Evaluating accuracy would need a labelled set of real
-photographs and images from current generators.
+These images are computer-made but not produced by an image generator. The model is strongly biased towards "real": it
+fixed the false positives on photographs, but it misses about one AI image in four and should not be read as evidence
+that an image is camera-original. With `samples/generator_tags.png` the consistency check therefore reports that the
+metadata names a generator while the classifier does not.
+
+## Evaluation
+
+**Root cause of the original problem.** Not a bug. The labels were checked (`0 = ai`, `1 = hum`, read by name), and the
+preprocessing matched the model card (224×224 bilinear resize, mean/std 0.5, no crop). On the validation photos, changing the
+preprocessing (no EXIF rotation, or downscaling first) moved at most 1 of 20 results. The previous model itself was
+unreliable on real photographs, and its errors depended on the camera: Fujifilm, Google Pixel and Sony photos scored about 99% "AI",
+while Nikon, Olympus, iPhone and Xiaomi photos scored about 0%.
+
+**Dataset** (`tests/eval_data/labels.csv`, built 2026-10-21 by `tests/eval_data/build_eval_set.py`, all from Wikimedia
+Commons with recorded source page, author, license and checksums):
+
+- 30 real camera/phone photographs: 3 each from 10 devices (Canon EOS 5D Mark II, Nikon D7000, Sony ILCE-7, Fujifilm X-T1,
+  Olympus E-M5, iPhone 11 Pro, Samsung Galaxy S9, Google Pixel, Huawei P20 Pro, Xiaomi Redmi Note 7), taken from the
+  "Taken with …" categories, captured before June 2022 and uploaded before 2023.
+- 30 stress copies of those photos, made locally and labelled as simulations: WhatsApp-style recompression
+  (1600 px, JPEG q60, metadata stripped), phone-screenshot framing (PNG 1080×2340), and plain resizing (1024 px, q85).
+- 45 AI-generated images from 10 generators (Stable Diffusion, Midjourney, DALL-E 3, Bing Image Creator, ChatGPT,
+  Gemini, Flux, Ideogram, Adobe Firefly, Imagen), taken from the "Images generated by …" categories.
+- Images were chosen by fixed rules and title-hash order, without looking at the images or at any model's scores.
+  Split per camera/generator: **validation 20 real / 18 AI**, **test 40 real / 27 AI** (a photo and its stress copy stay in
+  the same split). The images are not committed to git; `python tests/eval_data/build_eval_set.py` downloads them and
+  verifies the checksums.
+
+**Procedure** (`python -m evaluation.compare_models`, rules written before any results were seen):
+eight candidates were scored on the validation split only; the model and the inconclusive band were chosen there; the
+test split was then scored once for the chosen model and, as the "before" figure, for the previous model.
+"Inconclusive" always counts as a non-answer.
+
+**Validation split (used for the choice):**
+
+| Model (pinned) | License | Real acc. | AI acc. | Balanced | FPR on real |
+|---|---|---|---|---|---|
+| `Ateeqq/ai-vs-human-image-detector` (previous) | Apache-2.0 | 60.0% | 77.8% | 68.9% | 40.0% |
+| `buildborderless/CommunityForensics-DeepfakeDet-ViT` | MIT | 100% | 33.3% | 66.7% | 0% |
+| `haywoodsloan/ai-image-detector-deploy` | Apache-2.0 | 90.0% | 72.2% | 81.1% | 10.0% |
+| `umm-maybe/AI-image-detector` | CC BY / BY-ND | 85.0% | 38.9% | 62.0% | 15.0% |
+| `Organika/sdxl-detector` | CC BY-NC 3.0 | 75.0% | 55.6% | 65.3% | 25.0% |
+| **`Smogy/SMOGY-Ai-images-detector`** | CC BY-NC 4.0 | **95.0%** | **72.2%** | **83.6%** | **5.0%** |
+| `jacoballessio/ai-image-detect-distilled` | MIT | 75.0% | 38.9% | 57.0% | 25.0% |
+| `NYUAD-ComNets/NYUAD_AI-generated_images_detector` | Apache-2.0 | 80.0% | 50.0% | 65.0% | 20.0% |
+
+Why the others were rejected: Community Forensics never flagged a real photo but caught only 6 of 18 AI images;
+haywoodsloan was second (one more false positive and lower balanced accuracy); the umm-maybe/Organika family,
+jacoballessio and NYUAD caught half or fewer of the AI images, or flagged 15–25% of real photos.
+
+**Test split (scored once); target: balanced accuracy ≥ 70% and real-photo accuracy ≥ 70%:**
+
+| Group | Real photos correct | AI images correct | Balanced acc. | FPR | Inconclusive |
+|---|---|---|---|---|---|
+| **Smogy, all test images** | **40/40 (100%)** | **20/27 (74.1%)** | **87.0%** | **0%** | 0% |
+| Smogy, camera originals + AI | 20/20 (100%) | 20/27 (74.1%) | 87.0% | 0% | 0% |
+| Smogy, stress group (real only) | 20/20 (100%) | – | – | 0% | 0% |
+| Previous model, all test images | 37/40 (92.5%) | 25/27 (92.6%) | 92.5% | 7.5% | 0% |
+| Previous model, stress group | 18/20 (90.0%) | – | – | 10.0% | 0% |
+
+**Target met** on the test split. With no inconclusive band, results with and without inconclusive images are the same.
+95% Wilson intervals: real-photo accuracy 91–100% (40/40), AI-image accuracy 55–87% (20/27).
+
+Read these figures with care:
+
+- The previous model scored *better* on the test split than on validation, where it called 8 of 20 real photos AI.
+  Across all 60 real photos it flagged 11 (18%); Smogy flagged 1 (1.7%). The model choice was fixed on validation
+  before the test split was scored and was not changed afterwards. The gap between the two splits shows how much
+  results vary with samples this small.
+- Smogy missed 7 of 27 AI test images, including both Adobe Firefly images (scored 0.0%).
+- The set is small (one test photo ≈ 2.5 percentage points) and comes from one source. Accuracy may be lower on other
+  cameras, other generators, heavily edited photos and real WhatsApp/screenshot files. It is also unknown whether any of
+  these Commons images were in the model's training data.
+
+Re-run: `python tests/eval_data/build_eval_set.py` then `python -m evaluation.compare_models`. Results with per-image
+scores: `evaluation/results.json`. The regression test `tests/test_eval_fpr.py` fails if the configured model labels
+more than **10%** of the 40 real test photos as AI-generated (measured: 0%); it is skipped when the images or the model
+are not available.
 
 ---
 
@@ -170,6 +259,9 @@ database.py       SQLite schema and parameterised queries
 config.py         Settings and environment overrides
 download_model.py Pre-download and smoke-test the model
 make_samples.py   Reproducible demo images
+evaluate_model.py Score any detector on the labelled set (accuracy, FPR, AUC, stress group)
+evaluation/       candidates.py (reviewed models, pinned), compare_models.py (selection rules), results.json (measured)
+tests/eval_data/  labels.csv (sources, licenses, splits, checksums) and build_eval_set.py; images/ is git-ignored
 templates/        Jinja2 pages;  static/  CSS and JS (no external CDNs)
 tests/            pytest suite
 instance/         Runtime data (created automatically, git-ignored): evidence.db, uploads/, derived/, app.log, secret_key
@@ -195,8 +287,9 @@ summary level, and the full metadata / analysis / report as JSON.
 
 ## Test results
 
-`pytest -v` on Windows 11, Python 3.14.7, torch 2.14.1+cpu, transformers 5.20.2: **27 passed** (the real-model tests
-ran; they are skipped only if the model has not been downloaded).
+`pytest -v` on Windows 11, Python 3.14.7, torch 2.14.1+cpu, transformers 5.20.2, 2026-10-21: **31 passed, 0 skipped**
+(the real-model tests and the evaluation-set test ran; they are skipped with a message only if the model or the
+evaluation images are missing).
 
 | Requirement | Test |
 |---|---|
@@ -205,9 +298,12 @@ ran; they are skipped only if the model has not been downloaded).
 | Oversized file rejection (HTTP 413) | `test_oversized_file_rejected` |
 | EXIF extraction / missing EXIF | `test_exif_extraction`, `test_missing_exif_handled` |
 | SHA-256 correctness (NIST "abc" vector) and repeatability | `test_sha256_known_vector_and_repeatability` |
-| Successful AI inference (real model): labels, scores sum to 1, deterministic, persisted, shown on page and in TXT/JSON | `test_ai.py::test_real_inference_outputs`, `test_real_inference_end_to_end` |
+| Successful AI inference (real model): AI score read from the `artificial` label, scores sum to 1, deterministic, model ID + revision persisted, shown on page and in TXT/JSON | `test_ai.py::test_real_inference_outputs`, `test_real_inference_end_to_end` |
+| AI/real mapping by label name (swapped order, multi-class, unreviewed sigmoid → no guess) and the inconclusive display rule | `test_label_mapping_rules`, `test_inconclusive_band_is_a_display_rule` |
+| False-positive rate on the 40 real test photos ≤ 10% (measured 0%) | `test_eval_fpr.py::test_false_positive_rate_on_real_photos` |
 | Model-unavailable fallback (no fake scores, metadata still works, "AI analysis unavailable" in page and TXT) | `test_model_unavailable_fallback` |
 | TXT / JSON / PDF downloads (PDF structure checked) | `test_report_downloads` |
+| Records saved by v1.0 (previous model, old score format) still open and download | `test_old_v1_0_records_still_open` |
 | Persistence across restart, reopening an earlier report, search | `test_history_persists_across_restart` |
 | Delete report and its stored + derived files | `test_delete_removes_record_and_files` |
 | CSRF, path traversal / bad IDs, security headers | `test_csrf_required`, `test_bad_ids_and_pages` |
@@ -220,11 +316,12 @@ history still present after restarting the server, phone-width layout.
 ## Demonstration workflow
 
 1. Run `run_windows.bat`; the dashboard shows "AI model ready" after loading (takes a few seconds from cache).
-2. **Upload** `samples\camera_exif.jpg` → *Conflicting evidence*: the classifier flags it while EXIF names a Canon camera;
-   Photoshop tag (+15) and capture/modify time gap (+10) give caution score 25. Open the detailed report to show the ELA image
-   and the "Stored copy now: re-hashed" line.
-3. Upload `samples\generator_tags.png` → generator signature found in the PNG `parameters` chunk (+40) and generator-typical
-   1024×1024 size (+5): caution score 50 (elevated), and both lines of evidence agree.
+2. **Upload** `samples\camera_exif.jpg` → classifier *Likely real*; Photoshop tag (+15) and capture/modify time gap
+   (+10) give caution score 25, so the assessment is *Further review recommended*. Open the detailed report to show the
+   ELA image and the "Stored copy now: re-hashed" line.
+3. Upload `samples\generator_tags.png` → generator signature in the PNG `parameters` chunk (+40) and generator-typical
+   1024×1024 size (+5): caution score 50 (elevated). The classifier says *Likely real*, so the report shows
+   *Conflicting evidence* and explains that detectors miss generators – the classifier never overrides the metadata clue.
 4. Upload `samples\no_metadata.png` → shows that missing EXIF is explained as common, not as manipulation.
 5. Upload `samples\renamed_png.jpg` → extension mismatch finding. Upload `samples\not_an_image.jpg` → rejected with a clear message.
 6. Upload `camera_exif.jpg` again → "Identical file analysed before" (same SHA-256).
@@ -235,8 +332,12 @@ history still present after restarting the server, phone-width layout.
 ## Limitations
 
 - The classifier's scores are not calibrated probabilities and can be confidently wrong (see observed behaviour above).
-  Its accuracy on real-world photographs and current generators was not measured in this project.
+  Measured on 2026-10-21 on a small Wikimedia Commons set (test split: 40 real photos incl. 20 simulated
+  WhatsApp/screenshot/resized copies, 27 AI images from 10 generators): real-photo accuracy 100%, AI-image accuracy
+  74.1%, balanced accuracy 87.0%, false-positive rate 0%. These figures come from a small set and may be lower on
+  other kinds of images; about one AI image in four is missed (see [Evaluation](#evaluation)).
 - The model sees a 224×224 version of the image; pixel-level artefacts are invisible to it.
+- The AI model is licensed CC BY-NC 4.0 (non-commercial use only).
 - Metadata can be stripped, copied or forged; heuristics are clues only.
 - ELA requires expert interpretation and is not scored. C2PA manifests are only detected, not validated.
 - **Chain of custody:** hashing starts when this application receives the file. It does not establish the file's

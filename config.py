@@ -9,10 +9,10 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-# Pretrained detector reviewed for this project (see README "AI model").
-DEFAULT_MODEL_ID = "Ateeqq/ai-vs-human-image-detector"
-# Pinned commit of the model repository so results are reproducible.
-DEFAULT_MODEL_REVISION = "60e82406916921b823616bee33397baab38af3f0"
+# Pretrained detector selected on the validation split of tests/eval_data (see README "Evaluation"
+# and evaluation/results.json). Pinned commit so results are reproducible.
+DEFAULT_MODEL_ID = "Smogy/SMOGY-Ai-images-detector"
+DEFAULT_MODEL_REVISION = "fb9aadb85642d707f05b40191689d60f75b9a3e6"
 
 
 def _env_bool(name, default):

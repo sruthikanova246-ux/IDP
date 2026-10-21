@@ -28,6 +28,7 @@ def analyse(ai, metadata, file_info, heuristics, identity):
     generator_sig = "generator_signature" in finding_ids
     ai_ok = ai.get("status") == "ok" and ai.get("ai_score") is not None
     ai_flagged = ai_ok and ai.get("predicted_class") == "ai_generated"
+    ai_inconclusive = ai_ok and ai.get("predicted_class") == "inconclusive"
 
     # --- File identity --------------------------------------------------------
     add("hash_identity", "identity", "info", "SHA-256 fingerprint recorded",
@@ -59,7 +60,13 @@ def analyse(ai, metadata, file_info, heuristics, identity):
     if ai_ok:
         score = ai["ai_score"]
         pct = f"{score * 100:.1f}%"
-        if 0.35 <= score <= 0.65:
+        if ai.get("predicted_class") == "inconclusive":
+            add("ai_inconclusive", "ai", "caution", "Classifier result inconclusive",
+                f"The AI-class score ({pct}) falls inside the inconclusive band "
+                f"{ai['inconclusive_band'][0] * 100:.0f}-{ai['inconclusive_band'][1] * 100:.0f}%, where this "
+                "model's calls were unreliable on the validation images. No AI/real indication is given.",
+                "Rely on provenance checks rather than the classifier for this image.")
+        elif 0.35 <= score <= 0.65:
             add("ai_borderline", "ai", "caution", "Borderline classifier output",
                 f"The AI-class score ({pct}) is close to the decision boundary; the model is not "
                 "decisive for this image.", "Do not rely on the classifier result for this image.")
@@ -88,6 +95,8 @@ def analyse(ai, metadata, file_info, heuristics, identity):
                 "This is consistent with a generated image, but also with a real photo whose "
                 "metadata was stripped by a platform.",
                 "Ask the source for the original capture file.")
+        elif ai_inconclusive:
+            pass  # reported above; no cross-check conclusion is drawn from an inconclusive score
         elif generator_sig:
             add("metadata_generated_vs_ai_not_flagged", "cross-check", "caution",
                 "Metadata indicates a generator but classifier does not",
@@ -164,11 +173,16 @@ def _summary(ai, ai_flagged, generator_sig, heuristics, has_camera):
         text = ("AI detection was unavailable, so this preliminary assessment is based on metadata "
                 "and file structure only.")
     elif ai_flagged or generator_sig:
-        conflicting = (ai_flagged and has_camera and not generator_sig) or (generator_sig and not ai_flagged)
+        said_real = ai.get("predicted_class") == "not_ai_generated"
+        conflicting = (ai_flagged and has_camera and not generator_sig) or (generator_sig and said_real)
         level = "conflicting" if conflicting else "review"
         text = ("Indicators of possible AI generation were found"
                 + (", but the available evidence conflicts" if conflicting else "")
                 + ". Further review is recommended.")
+    elif ai.get("predicted_class") == "inconclusive":
+        level = "inconclusive"
+        text = ("The AI classifier was inconclusive for this image, and no generator signature was found "
+                "in the metadata.")
     elif heuristics["caution_band"] != "low":
         level = "review"
         text = "The classifier did not flag the image, but metadata clues warrant further review."

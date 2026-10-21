@@ -4,3 +4,6 @@ __pycache__/
 .pytest_cache/
 instance/
 .claude/
+tests/eval_data/images/
+eval_build.log
+evaluation/compare_run.log

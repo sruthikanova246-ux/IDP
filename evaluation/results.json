@@ -1,0 +1,6577 @@
+{
+  "generated_at": "2026-10-21T08:38:12Z",
+  "rules": "Target (set by the project owner): on the held-out TEST split, balanced accuracy >= 70% and\nreal-photo accuracy >= 70%, with \"Inconclusive\" counted as a non-answer (never correct).\n\n1. Candidates are scored on the VALIDATION split only. Eligible models have validation\n   real-photo accuracy >= 70% and AI-image accuracy >= 50%. Among eligible models choose the\n   highest validation balanced accuracy; ties -> lower false-positive rate -> higher AUC.\n   If no model is eligible, choose the highest validation balanced accuracy and report that\n   the target is unlikely to be met.\n2. The optional \"Inconclusive\" band is chosen on the VALIDATION split only, for the selected\n   model, from symmetric bands around 50%. Inconclusive answers never count as correct, so a\n   band cannot raise accuracy; its only benefit is fewer wrong calls. Choose the band with the\n   fewest wrong calls ((FP + FN) / N) that keeps validation balanced accuracy and real-photo\n   accuracy >= 70% and leaves at most 25% of images inconclusive; prefer no band unless a band\n   strictly reduces wrong calls.\n3. The TEST split is scored exactly once, for the chosen model, to report the result. The\n   previous model is also scored on it once, after the choice is frozen, as the \"before\" figure.",
+  "dataset": {
+    "n_real": 60,
+    "n_ai": 45,
+    "val": {
+      "n_real": 20,
+      "n_ai": 18
+    },
+    "test": {
+      "n_real": 40,
+      "n_ai": 27
+    },
+    "source": "Wikimedia Commons (see tests/eval_data/labels.csv)"
+  },
+  "target": {
+    "balanced_accuracy": 0.7,
+    "real_accuracy": 0.7,
+    "met_on_test": true
+  },
+  "chosen_model": "Smogy/SMOGY-Ai-images-detector",
+  "chosen_revision": "fb9aadb85642d707f05b40191689d60f75b9a3e6",
+  "selection_note": "Chosen by the validation rule (eligible: real-photo accuracy >= 70% and AI-image accuracy >= 50% on validation; highest balanced accuracy).",
+  "eligible_models": [
+    "haywoodsloan/ai-image-detector-deploy",
+    "Organika/sdxl-detector",
+    "Smogy/SMOGY-Ai-images-detector",
+    "NYUAD-ComNets/NYUAD_AI-generated_images_detector"
+  ],
+  "band_trials_val": [
+    {
+      "band": null,
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    },
+    {
+      "band": [
+        0.4,
+        0.6
+      ],
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    },
+    {
+      "band": [
+        0.35,
+        0.65
+      ],
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    },
+    {
+      "band": [
+        0.3,
+        0.7
+      ],
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    },
+    {
+      "band": [
+        0.25,
+        0.75
+      ],
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    },
+    {
+      "band": [
+        0.2,
+        0.8
+      ],
+      "wrong_rate": 0.1579,
+      "inconclusive_share": 0.0,
+      "fpr": 0.05,
+      "fnr": 0.2778,
+      "balanced_accuracy": 0.8361,
+      "real_accuracy": 0.95
+    }
+  ],
+  "chosen_band": null,
+  "chosen_test": {
+    "all": {
+      "n_real": 40,
+      "n_ai": 27,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 40,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 20,
+          "real": 7,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": 0.7407,
+      "balanced_accuracy": 0.8703,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.2593,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": 0.0,
+      "answered_only": {
+        "n_real": 40,
+        "n_ai": 27,
+        "real_accuracy": 1.0,
+        "ai_accuracy": 0.7407,
+        "balanced_accuracy": 0.8703
+      },
+      "auc": 0.9,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 1.0,
+        "q3": 1.0,
+        "max": 1.0
+      }
+    },
+    "originals": {
+      "n_real": 20,
+      "n_ai": 27,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 20,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 20,
+          "real": 7,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": 0.7407,
+      "balanced_accuracy": 0.8703,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.2593,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": 0.0,
+      "answered_only": {
+        "n_real": 20,
+        "n_ai": 27,
+        "real_accuracy": 1.0,
+        "ai_accuracy": 0.7407,
+        "balanced_accuracy": 0.8703
+      },
+      "auc": 0.9111,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 1.0,
+        "q3": 1.0,
+        "max": 1.0
+      }
+    },
+    "stress_real_only": {
+      "n_real": 20,
+      "n_ai": 0,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 20,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 0,
+          "real": 0,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": null,
+      "balanced_accuracy": null,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": null,
+      "answered_only": {
+        "n_real": 20,
+        "n_ai": 0,
+        "real_accuracy": 1.0,
+        "ai_accuracy": null,
+        "balanced_accuracy": null
+      },
+      "auc": null,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": null
+    }
+  },
+  "chosen_test_without_band": {
+    "all": {
+      "n_real": 40,
+      "n_ai": 27,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 40,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 20,
+          "real": 7,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": 0.7407,
+      "balanced_accuracy": 0.8703,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.2593,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": 0.0,
+      "answered_only": {
+        "n_real": 40,
+        "n_ai": 27,
+        "real_accuracy": 1.0,
+        "ai_accuracy": 0.7407,
+        "balanced_accuracy": 0.8703
+      },
+      "auc": 0.9,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 1.0,
+        "q3": 1.0,
+        "max": 1.0
+      }
+    },
+    "originals": {
+      "n_real": 20,
+      "n_ai": 27,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 20,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 20,
+          "real": 7,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": 0.7407,
+      "balanced_accuracy": 0.8703,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": 0.2593,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": 0.0,
+      "answered_only": {
+        "n_real": 20,
+        "n_ai": 27,
+        "real_accuracy": 1.0,
+        "ai_accuracy": 0.7407,
+        "balanced_accuracy": 0.8703
+      },
+      "auc": 0.9111,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 1.0,
+        "q3": 1.0,
+        "max": 1.0
+      }
+    },
+    "stress_real_only": {
+      "n_real": 20,
+      "n_ai": 0,
+      "confusion": {
+        "real": {
+          "ai": 0,
+          "real": 20,
+          "inconclusive": 0
+        },
+        "ai": {
+          "ai": 0,
+          "real": 0,
+          "inconclusive": 0
+        }
+      },
+      "real_accuracy": 1.0,
+      "ai_accuracy": null,
+      "balanced_accuracy": null,
+      "false_positive_rate": 0.0,
+      "false_negative_rate": null,
+      "inconclusive_share": 0.0,
+      "inconclusive_rate_real": 0.0,
+      "inconclusive_rate_ai": null,
+      "answered_only": {
+        "n_real": 20,
+        "n_ai": 0,
+        "real_accuracy": 1.0,
+        "ai_accuracy": null,
+        "balanced_accuracy": null
+      },
+      "auc": null,
+      "ai_score_real_photos": {
+        "min": 0.0,
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0,
+        "max": 0.0
+      },
+      "ai_score_ai_images": null
+    }
+  },
+  "baseline_test": {
+    "id": "Ateeqq/ai-vs-human-image-detector",
+    "revision": "60e82406916921b823616bee33397baab38af3f0",
+    "test": {
+      "all": {
+        "n_real": 40,
+        "n_ai": 27,
+        "confusion": {
+          "real": {
+            "ai": 3,
+            "real": 37,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 25,
+            "real": 2,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.925,
+        "ai_accuracy": 0.9259,
+        "balanced_accuracy": 0.9254,
+        "false_positive_rate": 0.075,
+        "false_negative_rate": 0.0741,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 40,
+          "n_ai": 27,
+          "real_accuracy": 0.925,
+          "ai_accuracy": 0.9259,
+          "balanced_accuracy": 0.9254
+        },
+        "auc": 0.9898,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0002,
+          "median": 0.0004,
+          "q3": 0.0012,
+          "max": 0.9851
+        },
+        "ai_score_ai_images": {
+          "min": 0.002,
+          "q1": 0.9995,
+          "median": 0.9999,
+          "q3": 1.0,
+          "max": 1.0
+        }
+      },
+      "originals": {
+        "n_real": 20,
+        "n_ai": 27,
+        "confusion": {
+          "real": {
+            "ai": 1,
+            "real": 19,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 25,
+            "real": 2,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.95,
+        "ai_accuracy": 0.9259,
+        "balanced_accuracy": 0.9379,
+        "false_positive_rate": 0.05,
+        "false_negative_rate": 0.0741,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 27,
+          "real_accuracy": 0.95,
+          "ai_accuracy": 0.9259,
+          "balanced_accuracy": 0.9379
+        },
+        "auc": 0.9907,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0001,
+          "median": 0.0004,
+          "q3": 0.0011,
+          "max": 0.981
+        },
+        "ai_score_ai_images": {
+          "min": 0.002,
+          "q1": 0.9995,
+          "median": 0.9999,
+          "q3": 1.0,
+          "max": 1.0
+        }
+      },
+      "stress_real_only": {
+        "n_real": 20,
+        "n_ai": 0,
+        "confusion": {
+          "real": {
+            "ai": 2,
+            "real": 18,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 0,
+            "real": 0,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.9,
+        "ai_accuracy": null,
+        "balanced_accuracy": null,
+        "false_positive_rate": 0.1,
+        "false_negative_rate": null,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": null,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 0,
+          "real_accuracy": 0.9,
+          "ai_accuracy": null,
+          "balanced_accuracy": null
+        },
+        "auc": null,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0002,
+          "median": 0.0004,
+          "q3": 0.0016,
+          "max": 0.9851
+        },
+        "ai_score_ai_images": null
+      }
+    }
+  },
+  "candidates": [
+    {
+      "id": "Ateeqq/ai-vs-human-image-detector",
+      "revision": "60e82406916921b823616bee33397baab38af3f0",
+      "license": "Apache-2.0",
+      "labels": {
+        "0": "ai",
+        "1": "hum"
+      },
+      "card": "SigLIP fine-tuned on 60k AI + 60k human images; card notes users reported overfitting.",
+      "model_id": "Ateeqq/ai-vs-human-image-detector",
+      "seconds": 20.8,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 8,
+            "real": 12,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 14,
+            "real": 4,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.6,
+        "ai_accuracy": 0.7778,
+        "balanced_accuracy": 0.6889,
+        "false_positive_rate": 0.4,
+        "false_negative_rate": 0.2222,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.6,
+          "ai_accuracy": 0.7778,
+          "balanced_accuracy": 0.6889
+        },
+        "auc": 0.8583,
+        "ai_score_real_photos": {
+          "min": 0.0001,
+          "q1": 0.0003,
+          "median": 0.0025,
+          "q3": 0.9979,
+          "max": 0.9999
+        },
+        "ai_score_ai_images": {
+          "min": 0.0003,
+          "q1": 0.7533,
+          "median": 0.9999,
+          "q3": 1.0,
+          "max": 1.0
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 8,
+              "real": 12,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 14,
+              "real": 4,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.6,
+          "ai_accuracy": 0.7778,
+          "balanced_accuracy": 0.6889,
+          "false_positive_rate": 0.4,
+          "false_negative_rate": 0.2222,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.6,
+            "ai_accuracy": 0.7778,
+            "balanced_accuracy": 0.6889
+          },
+          "auc": 0.8583,
+          "ai_score_real_photos": {
+            "min": 0.0001,
+            "q1": 0.0003,
+            "median": 0.0025,
+            "q3": 0.9979,
+            "max": 0.9999
+          },
+          "ai_score_ai_images": {
+            "min": 0.0003,
+            "q1": 0.7533,
+            "median": 0.9999,
+            "q3": 1.0,
+            "max": 1.0
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 5,
+              "real": 5,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 14,
+              "real": 4,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.5,
+          "ai_accuracy": 0.7778,
+          "balanced_accuracy": 0.6389,
+          "false_positive_rate": 0.5,
+          "false_negative_rate": 0.2222,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.5,
+            "ai_accuracy": 0.7778,
+            "balanced_accuracy": 0.6389
+          },
+          "auc": 0.8333,
+          "ai_score_real_photos": {
+            "min": 0.0001,
+            "q1": 0.0003,
+            "median": 0.4974,
+            "q3": 0.9991,
+            "max": 0.9999
+          },
+          "ai_score_ai_images": {
+            "min": 0.0003,
+            "q1": 0.7533,
+            "median": 0.9999,
+            "q3": 1.0,
+            "max": 1.0
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 3,
+              "real": 7,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.7,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.3,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.7,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0001,
+            "q1": 0.0003,
+            "median": 0.0023,
+            "q3": 0.996,
+            "max": 0.999
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0172
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9996
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0027
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9992
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 1.0
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5015
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0006
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5036
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.999
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9944
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.001
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0004
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0002
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5016
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9978
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0001
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 5,
+          "median_ai_score": 0.4974
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9981
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0039
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 1,
+          "median_ai_score": 0.0004
+        }
+      }
+    },
+    {
+      "id": "buildborderless/CommunityForensics-DeepfakeDet-ViT",
+      "revision": "ac6ee457bea904a373065754107451793b56db00",
+      "license": "MIT",
+      "labels": {
+        "0": "LABEL_0"
+      },
+      "card": "ViT-S from the Community Forensics paper (Park & Owens, CVPR 2025): 2.7M images, 4,803 generators. Third-party upload; config/weights corrected July 2026.",
+      "model_id": "buildborderless/CommunityForensics-DeepfakeDet-ViT",
+      "seconds": 14.9,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 0,
+            "real": 20,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 6,
+            "real": 12,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 1.0,
+        "ai_accuracy": 0.3333,
+        "balanced_accuracy": 0.6666,
+        "false_positive_rate": 0.0,
+        "false_negative_rate": 0.6667,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 1.0,
+          "ai_accuracy": 0.3333,
+          "balanced_accuracy": 0.6666
+        },
+        "auc": 0.6389,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0001,
+          "median": 0.0034,
+          "q3": 0.0855,
+          "max": 0.3876
+        },
+        "ai_score_ai_images": {
+          "min": 0.0,
+          "q1": 0.0018,
+          "median": 0.0104,
+          "q3": 0.9927,
+          "max": 1.0
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 0,
+              "real": 20,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 6,
+              "real": 12,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 1.0,
+          "ai_accuracy": 0.3333,
+          "balanced_accuracy": 0.6666,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.6667,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 1.0,
+            "ai_accuracy": 0.3333,
+            "balanced_accuracy": 0.6666
+          },
+          "auc": 0.6389,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0001,
+            "median": 0.0034,
+            "q3": 0.0855,
+            "max": 0.3876
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0018,
+            "median": 0.0104,
+            "q3": 0.9927,
+            "max": 1.0
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 0,
+              "real": 10,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 6,
+              "real": 12,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 1.0,
+          "ai_accuracy": 0.3333,
+          "balanced_accuracy": 0.6666,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.6667,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 1.0,
+            "ai_accuracy": 0.3333,
+            "balanced_accuracy": 0.6666
+          },
+          "auc": 0.5444,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0023,
+            "median": 0.049,
+            "q3": 0.1438,
+            "max": 0.3876
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0018,
+            "median": 0.0104,
+            "q3": 0.9927,
+            "max": 1.0
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 0,
+              "real": 10,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 1.0,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 1.0,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0001,
+            "median": 0.0014,
+            "q3": 0.0058,
+            "max": 0.0852
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0024
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.2383
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8903
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0263
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0031
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 1.0
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0069
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0437
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0063
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0048
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1581
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0474
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0578
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0034
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1997
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 0,
+          "median_ai_score": 0.049
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0028
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0001
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0069
+        }
+      }
+    },
+    {
+      "id": "haywoodsloan/ai-image-detector-deploy",
+      "revision": "4ae1822603cb1ec980c217cfde1ef1b8e0477a16",
+      "license": "Apache-2.0",
+      "labels": {
+        "0": "artificial",
+        "1": "real"
+      },
+      "card": "SwinV2 trained with AutoTrain; card lists only validation metrics, training data undocumented.",
+      "model_id": "haywoodsloan/ai-image-detector-deploy",
+      "seconds": 28.2,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 2,
+            "real": 18,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 13,
+            "real": 5,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.9,
+        "ai_accuracy": 0.7222,
+        "balanced_accuracy": 0.8111,
+        "false_positive_rate": 0.1,
+        "false_negative_rate": 0.2778,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.9,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8111
+        },
+        "auc": 0.9028,
+        "ai_score_real_photos": {
+          "min": 0.0002,
+          "q1": 0.0026,
+          "median": 0.0169,
+          "q3": 0.0525,
+          "max": 0.973
+        },
+        "ai_score_ai_images": {
+          "min": 0.0,
+          "q1": 0.0892,
+          "median": 0.9988,
+          "q3": 0.9999,
+          "max": 1.0
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 18,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 13,
+              "real": 5,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.9,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8111,
+          "false_positive_rate": 0.1,
+          "false_negative_rate": 0.2778,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.9,
+            "ai_accuracy": 0.7222,
+            "balanced_accuracy": 0.8111
+          },
+          "auc": 0.9028,
+          "ai_score_real_photos": {
+            "min": 0.0002,
+            "q1": 0.0026,
+            "median": 0.0169,
+            "q3": 0.0525,
+            "max": 0.973
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0892,
+            "median": 0.9988,
+            "q3": 0.9999,
+            "max": 1.0
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 0,
+              "real": 10,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 13,
+              "real": 5,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 1.0,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8611,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.2778,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 1.0,
+            "ai_accuracy": 0.7222,
+            "balanced_accuracy": 0.8611
+          },
+          "auc": 0.9222,
+          "ai_score_real_photos": {
+            "min": 0.0004,
+            "q1": 0.0035,
+            "median": 0.0178,
+            "q3": 0.0403,
+            "max": 0.0837
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0892,
+            "median": 0.9988,
+            "q3": 0.9999,
+            "max": 1.0
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.8,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0002,
+            "q1": 0.0008,
+            "median": 0.0132,
+            "q3": 0.2577,
+            "max": 0.973
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0895
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5202
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4972
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5272
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9702
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 0.9998
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5439
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0055
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5283
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.014
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.025
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4378
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0003
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0065
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0314
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0511
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0022
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0178
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0045
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8489
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0024
+        }
+      }
+    },
+    {
+      "id": "umm-maybe/AI-image-detector",
+      "revision": "c7e223baf11bc40528af364ba7bdea030ef42f9e",
+      "license": "CC-BY-4.0 (card text says CC BY-ND 4.0)",
+      "labels": {
+        "0": "artificial",
+        "1": "human"
+      },
+      "card": "Oct 2022 proof of concept for AI *art*; card says it is not a photo detector.",
+      "model_id": "umm-maybe/AI-image-detector",
+      "seconds": 15.0,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 3,
+            "real": 17,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 7,
+            "real": 11,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.85,
+        "ai_accuracy": 0.3889,
+        "balanced_accuracy": 0.6195,
+        "false_positive_rate": 0.15,
+        "false_negative_rate": 0.6111,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.85,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.6195
+        },
+        "auc": 0.6861,
+        "ai_score_real_photos": {
+          "min": 0.0017,
+          "q1": 0.0121,
+          "median": 0.0527,
+          "q3": 0.1834,
+          "max": 0.8469
+        },
+        "ai_score_ai_images": {
+          "min": 0.0002,
+          "q1": 0.02,
+          "median": 0.2929,
+          "q3": 0.8793,
+          "max": 0.9729
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 3,
+              "real": 17,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 7,
+              "real": 11,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.85,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.6195,
+          "false_positive_rate": 0.15,
+          "false_negative_rate": 0.6111,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.85,
+            "ai_accuracy": 0.3889,
+            "balanced_accuracy": 0.6195
+          },
+          "auc": 0.6861,
+          "ai_score_real_photos": {
+            "min": 0.0017,
+            "q1": 0.0121,
+            "median": 0.0527,
+            "q3": 0.1834,
+            "max": 0.8469
+          },
+          "ai_score_ai_images": {
+            "min": 0.0002,
+            "q1": 0.02,
+            "median": 0.2929,
+            "q3": 0.8793,
+            "max": 0.9729
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 1,
+              "real": 9,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 7,
+              "real": 11,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.9,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.6444,
+          "false_positive_rate": 0.1,
+          "false_negative_rate": 0.6111,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.9,
+            "ai_accuracy": 0.3889,
+            "balanced_accuracy": 0.6444
+          },
+          "auc": 0.6778,
+          "ai_score_real_photos": {
+            "min": 0.0064,
+            "q1": 0.0195,
+            "median": 0.0557,
+            "q3": 0.2676,
+            "max": 0.8469
+          },
+          "ai_score_ai_images": {
+            "min": 0.0002,
+            "q1": 0.02,
+            "median": 0.2929,
+            "q3": 0.8793,
+            "max": 0.9729
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.8,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0017,
+            "q1": 0.0089,
+            "median": 0.0527,
+            "q3": 0.2893,
+            "max": 0.8353
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1709
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4466
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1039
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.6921
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.2929
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0068
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.739
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0235
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9226
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5793
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1669
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.6132
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.016
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8411
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1012
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0478
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0606
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0077
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0046
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0283
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 1,
+          "median_ai_score": 0.0557
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0085
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 1,
+          "median_ai_score": 0.1135
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 1,
+          "median_ai_score": 0.0956
+        }
+      }
+    },
+    {
+      "id": "Organika/sdxl-detector",
+      "revision": "b37fede8562cb72b89ec201c0987f96ba21b518a",
+      "license": "CC-BY-NC-3.0 (non-commercial)",
+      "labels": {
+        "0": "artificial",
+        "1": "human"
+      },
+      "card": "Fine-tune of umm-maybe on SDXL-era images.",
+      "model_id": "Organika/sdxl-detector",
+      "seconds": 13.8,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 5,
+            "real": 15,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 10,
+            "real": 8,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.75,
+        "ai_accuracy": 0.5556,
+        "balanced_accuracy": 0.6528,
+        "false_positive_rate": 0.25,
+        "false_negative_rate": 0.4444,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.75,
+          "ai_accuracy": 0.5556,
+          "balanced_accuracy": 0.6528
+        },
+        "auc": 0.6931,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0003,
+          "median": 0.0119,
+          "q3": 0.4619,
+          "max": 0.9996
+        },
+        "ai_score_ai_images": {
+          "min": 0.0,
+          "q1": 0.0024,
+          "median": 0.6772,
+          "q3": 0.9969,
+          "max": 1.0
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 5,
+              "real": 15,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 10,
+              "real": 8,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.75,
+          "ai_accuracy": 0.5556,
+          "balanced_accuracy": 0.6528,
+          "false_positive_rate": 0.25,
+          "false_negative_rate": 0.4444,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.75,
+            "ai_accuracy": 0.5556,
+            "balanced_accuracy": 0.6528
+          },
+          "auc": 0.6931,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0003,
+            "median": 0.0119,
+            "q3": 0.4619,
+            "max": 0.9996
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0024,
+            "median": 0.6772,
+            "q3": 0.9969,
+            "max": 1.0
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 10,
+              "real": 8,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": 0.5556,
+          "balanced_accuracy": 0.6778,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": 0.4444,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.8,
+            "ai_accuracy": 0.5556,
+            "balanced_accuracy": 0.6778
+          },
+          "auc": 0.7194,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0001,
+            "median": 0.0044,
+            "q3": 0.2581,
+            "max": 0.9996
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0024,
+            "median": 0.6772,
+            "q3": 0.9969,
+            "max": 1.0
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 3,
+              "real": 7,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.7,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.3,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.7,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0021,
+            "median": 0.0729,
+            "q3": 0.5757,
+            "max": 0.6963
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0001
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8315
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0144
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9949
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5054
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1149
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9999
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 0.9951
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0015
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8429
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0448
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.525
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0014
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1075
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.275
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.8277
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0221
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.3529
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 2,
+          "median_ai_score": 0.0044
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0028
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 1,
+          "median_ai_score": 0.2007
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 2,
+          "median_ai_score": 0.317
+        }
+      }
+    },
+    {
+      "id": "Smogy/SMOGY-Ai-images-detector",
+      "revision": "fb9aadb85642d707f05b40191689d60f75b9a3e6",
+      "license": "CC-BY-NC-4.0 (non-commercial)",
+      "labels": {
+        "0": "artificial",
+        "1": "human"
+      },
+      "card": "Fine-tune of Organika/sdxl-detector on 50k reddit/kaggle images; card reports out-of-domain accuracy 76-91%.",
+      "model_id": "Smogy/SMOGY-Ai-images-detector",
+      "seconds": 14.7,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 1,
+            "real": 19,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 13,
+            "real": 5,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.95,
+        "ai_accuracy": 0.7222,
+        "balanced_accuracy": 0.8361,
+        "false_positive_rate": 0.05,
+        "false_negative_rate": 0.2778,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.95,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8361
+        },
+        "auc": 0.8972,
+        "ai_score_real_photos": {
+          "min": 0.0,
+          "q1": 0.0,
+          "median": 0.0,
+          "q3": 0.0,
+          "max": 0.9825
+        },
+        "ai_score_ai_images": {
+          "min": 0.0,
+          "q1": 0.0009,
+          "median": 1.0,
+          "q3": 1.0,
+          "max": 1.0
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 1,
+              "real": 19,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 13,
+              "real": 5,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.95,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8361,
+          "false_positive_rate": 0.05,
+          "false_negative_rate": 0.2778,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.95,
+            "ai_accuracy": 0.7222,
+            "balanced_accuracy": 0.8361
+          },
+          "auc": 0.8972,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0,
+            "median": 0.0,
+            "q3": 0.0,
+            "max": 0.9825
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0009,
+            "median": 1.0,
+            "q3": 1.0,
+            "max": 1.0
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 1,
+              "real": 9,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 13,
+              "real": 5,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.9,
+          "ai_accuracy": 0.7222,
+          "balanced_accuracy": 0.8111,
+          "false_positive_rate": 0.1,
+          "false_negative_rate": 0.2778,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.9,
+            "ai_accuracy": 0.7222,
+            "balanced_accuracy": 0.8111
+          },
+          "auc": 0.8778,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0,
+            "median": 0.0,
+            "q3": 0.0004,
+            "max": 0.9825
+          },
+          "ai_score_ai_images": {
+            "min": 0.0,
+            "q1": 0.0009,
+            "median": 1.0,
+            "q3": 1.0,
+            "max": 1.0
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 0,
+              "real": 10,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 1.0,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 1.0,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0,
+            "q1": 0.0,
+            "median": 0.0,
+            "q3": 0.0,
+            "max": 0.0019
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5006
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 1.0
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 1.0
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9836
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4912
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0017
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 1,
+          "median_ai_score": 0.0
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0
+        }
+      }
+    },
+    {
+      "id": "jacoballessio/ai-image-detect-distilled",
+      "revision": "4098d40c873a2e38404ea378a8284f33125bd90c",
+      "license": "MIT",
+      "labels": {
+        "0": "fake",
+        "1": "real"
+      },
+      "card": "Distilled 11.8M ViT; card reports 74% validation accuracy.",
+      "model_id": "jacoballessio/ai-image-detect-distilled",
+      "seconds": 20.6,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 5,
+            "real": 15,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 7,
+            "real": 11,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.75,
+        "ai_accuracy": 0.3889,
+        "balanced_accuracy": 0.5695,
+        "false_positive_rate": 0.25,
+        "false_negative_rate": 0.6111,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.75,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.5695
+        },
+        "auc": 0.5556,
+        "ai_score_real_photos": {
+          "min": 0.2224,
+          "q1": 0.3078,
+          "median": 0.4034,
+          "q3": 0.5177,
+          "max": 0.6187
+        },
+        "ai_score_ai_images": {
+          "min": 0.187,
+          "q1": 0.3252,
+          "median": 0.4399,
+          "q3": 0.5651,
+          "max": 0.6495
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 5,
+              "real": 15,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 7,
+              "real": 11,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.75,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.5695,
+          "false_positive_rate": 0.25,
+          "false_negative_rate": 0.6111,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.75,
+            "ai_accuracy": 0.3889,
+            "balanced_accuracy": 0.5695
+          },
+          "auc": 0.5556,
+          "ai_score_real_photos": {
+            "min": 0.2224,
+            "q1": 0.3078,
+            "median": 0.4034,
+            "q3": 0.5177,
+            "max": 0.6187
+          },
+          "ai_score_ai_images": {
+            "min": 0.187,
+            "q1": 0.3252,
+            "median": 0.4399,
+            "q3": 0.5651,
+            "max": 0.6495
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 3,
+              "real": 7,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 7,
+              "real": 11,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.7,
+          "ai_accuracy": 0.3889,
+          "balanced_accuracy": 0.5444,
+          "false_positive_rate": 0.3,
+          "false_negative_rate": 0.6111,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.7,
+            "ai_accuracy": 0.3889,
+            "balanced_accuracy": 0.5444
+          },
+          "auc": 0.5444,
+          "ai_score_real_photos": {
+            "min": 0.2224,
+            "q1": 0.2868,
+            "median": 0.4042,
+            "q3": 0.5497,
+            "max": 0.6187
+          },
+          "ai_score_ai_images": {
+            "min": 0.187,
+            "q1": 0.3252,
+            "median": 0.4399,
+            "q3": 0.5651,
+            "max": 0.6495
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.8,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.2363,
+            "q1": 0.3155,
+            "median": 0.3912,
+            "q3": 0.4679,
+            "max": 0.6185
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.344
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.391
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4753
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.5189
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4128
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.2497
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4123
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4381
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5497
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4857
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.6186
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.433
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4034
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.2358
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.5504
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.3686
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.3039
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.3008
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4044
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4439
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 3,
+          "median_ai_score": 0.4042
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.4032
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 1,
+          "median_ai_score": 0.3791
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 1,
+          "median_ai_score": 0.3735
+        }
+      }
+    },
+    {
+      "id": "NYUAD-ComNets/NYUAD_AI-generated_images_detector",
+      "revision": "b0a2e665f6e40164436cae6c0c95e7e4386f7684",
+      "license": "Apache-2.0",
+      "labels": {
+        "0": "dalle",
+        "1": "real",
+        "2": "sd"
+      },
+      "card": "ViT; auto-generated card, training data not described beyond DALL-E and SD classes.",
+      "model_id": "NYUAD-ComNets/NYUAD_AI-generated_images_detector",
+      "seconds": 14.0,
+      "band": null,
+      "val": {
+        "n_real": 20,
+        "n_ai": 18,
+        "confusion": {
+          "real": {
+            "ai": 4,
+            "real": 16,
+            "inconclusive": 0
+          },
+          "ai": {
+            "ai": 9,
+            "real": 9,
+            "inconclusive": 0
+          }
+        },
+        "real_accuracy": 0.8,
+        "ai_accuracy": 0.5,
+        "balanced_accuracy": 0.65,
+        "false_positive_rate": 0.2,
+        "false_negative_rate": 0.5,
+        "inconclusive_share": 0.0,
+        "inconclusive_rate_real": 0.0,
+        "inconclusive_rate_ai": 0.0,
+        "answered_only": {
+          "n_real": 20,
+          "n_ai": 18,
+          "real_accuracy": 0.8,
+          "ai_accuracy": 0.5,
+          "balanced_accuracy": 0.65
+        },
+        "auc": 0.7833,
+        "ai_score_real_photos": {
+          "min": 0.0011,
+          "q1": 0.0012,
+          "median": 0.0017,
+          "q3": 0.0124,
+          "max": 0.9968
+        },
+        "ai_score_ai_images": {
+          "min": 0.0012,
+          "q1": 0.0075,
+          "median": 0.5376,
+          "q3": 0.9987,
+          "max": 0.9996
+        }
+      },
+      "val_detail": {
+        "all": {
+          "n_real": 20,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 4,
+              "real": 16,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 9,
+              "real": 9,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": 0.5,
+          "balanced_accuracy": 0.65,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": 0.5,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 20,
+            "n_ai": 18,
+            "real_accuracy": 0.8,
+            "ai_accuracy": 0.5,
+            "balanced_accuracy": 0.65
+          },
+          "auc": 0.7833,
+          "ai_score_real_photos": {
+            "min": 0.0011,
+            "q1": 0.0012,
+            "median": 0.0017,
+            "q3": 0.0124,
+            "max": 0.9968
+          },
+          "ai_score_ai_images": {
+            "min": 0.0012,
+            "q1": 0.0075,
+            "median": 0.5376,
+            "q3": 0.9987,
+            "max": 0.9996
+          }
+        },
+        "originals": {
+          "n_real": 10,
+          "n_ai": 18,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 9,
+              "real": 9,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": 0.5,
+          "balanced_accuracy": 0.65,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": 0.5,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": 0.0,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 18,
+            "real_accuracy": 0.8,
+            "ai_accuracy": 0.5,
+            "balanced_accuracy": 0.65
+          },
+          "auc": 0.7889,
+          "ai_score_real_photos": {
+            "min": 0.0011,
+            "q1": 0.0012,
+            "median": 0.0023,
+            "q3": 0.2561,
+            "max": 0.9968
+          },
+          "ai_score_ai_images": {
+            "min": 0.0012,
+            "q1": 0.0075,
+            "median": 0.5376,
+            "q3": 0.9987,
+            "max": 0.9996
+          }
+        },
+        "stress_real_only": {
+          "n_real": 10,
+          "n_ai": 0,
+          "confusion": {
+            "real": {
+              "ai": 2,
+              "real": 8,
+              "inconclusive": 0
+            },
+            "ai": {
+              "ai": 0,
+              "real": 0,
+              "inconclusive": 0
+            }
+          },
+          "real_accuracy": 0.8,
+          "ai_accuracy": null,
+          "balanced_accuracy": null,
+          "false_positive_rate": 0.2,
+          "false_negative_rate": null,
+          "inconclusive_share": 0.0,
+          "inconclusive_rate_real": 0.0,
+          "inconclusive_rate_ai": null,
+          "answered_only": {
+            "n_real": 10,
+            "n_ai": 0,
+            "real_accuracy": 0.8,
+            "ai_accuracy": null,
+            "balanced_accuracy": null
+          },
+          "auc": null,
+          "ai_score_real_photos": {
+            "min": 0.0011,
+            "q1": 0.0012,
+            "median": 0.0017,
+            "q3": 0.259,
+            "max": 0.9967
+          },
+          "ai_score_ai_images": null
+        }
+      },
+      "by_stratum": {
+        "ai | Adobe Firefly": {
+          "n": 1,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0012
+        },
+        "ai | Bing Image Creator (DALL-E 3)": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5107
+        },
+        "ai | ChatGPT / GPT Image": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5714
+        },
+        "ai | DALL-E 3": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9992
+        },
+        "ai | Flux": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.5043
+        },
+        "ai | Gemini / Nano Banana": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0013
+        },
+        "ai | Ideogram": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.1756
+        },
+        "ai | Imagen": {
+          "n": 1,
+          "flagged_ai": 1,
+          "median_ai_score": 0.7253
+        },
+        "ai | Midjourney": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9983
+        },
+        "ai | Stable Diffusion": {
+          "n": 2,
+          "flagged_ai": 1,
+          "median_ai_score": 0.4999
+        },
+        "real | Apple iPhone (phone)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9968
+        },
+        "real | Canon EOS 5D Mark II (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0073
+        },
+        "real | Fujifilm X-T1 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0011
+        },
+        "real | Google Pixel (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0013
+        },
+        "real | Huawei P20 Pro (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0057
+        },
+        "real | Nikon D7000 (DSLR)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0015
+        },
+        "real | Olympus E-M5 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 2,
+          "median_ai_score": 0.9957
+        },
+        "real | Samsung Galaxy (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0022
+        },
+        "real | Sony ILCE-7 (mirrorless)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0012
+        },
+        "real | Xiaomi (phone)": {
+          "n": 2,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0069
+        }
+      },
+      "by_variant": {
+        "real | original": {
+          "n": 10,
+          "flagged_ai": 2,
+          "median_ai_score": 0.0023
+        },
+        "real | resized": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0012
+        },
+        "real | screenshot_sim": {
+          "n": 3,
+          "flagged_ai": 0,
+          "median_ai_score": 0.0018
+        },
+        "real | whatsapp_sim": {
+          "n": 4,
+          "flagged_ai": 2,
+          "median_ai_score": 0.5012
+        }
+      }
+    }
+  ],
+  "per_image": {
+    "val": {
+      "Ateeqq/ai-vs-human-image-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.999938
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.000321
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.997361
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.999026
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000175
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.000589
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.999391
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.993497
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.001215
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.000121
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999963
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999975
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.003031
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999993
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999731
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999999
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.99922
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.999997
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.005133
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.000323
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.998642
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.999791
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.999999
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.999998
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999946
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999804
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.01716
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999998
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.000577
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.007195
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.99899
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.995262
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.00077
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.00038
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000162
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.003872
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.998143
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.000142
+        }
+      ],
+      "buildborderless/CommunityForensics-DeepfakeDet-ViT": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.012404
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.092136
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.003001
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.009494
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.114764
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.085565
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 5.4e-05
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.231075
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 4.3e-05
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.387621
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999935
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.011493
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.002228
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.473858
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.002707
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.009348
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.990718
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.004244
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.000498
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.052467
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 6.8e-05
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.782029
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.998623
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 6.7e-05
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.006146
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 2.3e-05
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999973
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.001901
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.000115
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.00016
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.08515
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 5.1e-05
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.002762
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000913
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 2e-06
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.003778
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.011863
+        }
+      ],
+      "haywoodsloan/ai-image-detector-deploy": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.083677
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.000369
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.076743
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.023563
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.012061
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.007224
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.002218
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.028138
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.026741
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.003955
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999807
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999935
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.088066
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999826
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999801
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999948
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.040545
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.999943
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.99427
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 3.1e-05
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.056644
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.997789
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.999783
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.99995
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.994224
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.946142
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.089525
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999791
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.003765
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.972977
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.00453
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.021837
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.848896
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.000185
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.001001
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.06062
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.025535
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.000377
+        }
+      ],
+      "umm-maybe/AI-image-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.470575
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.047527
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.007477
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.023495
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.063853
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.199935
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.006351
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.846938
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.088871
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.035342
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.959893
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.198713
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.877749
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.967527
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.411238
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.972921
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.009388
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.883779
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.207525
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.00021
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.006396
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.007162
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.287449
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.298391
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.868664
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.609252
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.170907
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.023546
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.133837
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.755786
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.008536
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.835337
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.11354
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.048117
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.057322
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.009084
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.001696
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.021316
+        }
+      ],
+      "Organika/sdxl-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.989361
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 2e-06
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.004259
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 7.9e-05
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.001049
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.004508
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.999565
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.014361
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.009446
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.69097
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.994915
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.00185
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.001164
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.993701
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.996046
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.663524
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.999451
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.028717
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 2e-06
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.002539
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.227167
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.01073
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.999976
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999858
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999887
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 5e-05
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.995081
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.085146
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.060643
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.002776
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.200711
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 7e-06
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.548945
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.655889
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.039993
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.696336
+        }
+      ],
+      "Smogy/SMOGY-Ai-images-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.982485
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 2.6e-05
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.001517
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.967151
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.001179
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.999995
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 7e-06
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 1e-05
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 1.0
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 1e-06
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.001922
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.0
+        }
+      ],
+      "jacoballessio/ai-image-detect-distilled": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.546679
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.368076
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.404903
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.403597
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.303919
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.61867
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.222434
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.235378
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.558783
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.444727
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.340802
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.630637
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.64953
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.44994
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.514782
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.522989
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.186999
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.595054
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.572841
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.377722
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.220926
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.278488
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.263061
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.562488
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.382897
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.441716
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.343978
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.438144
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.618533
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.319355
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.403228
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.236252
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.542078
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.369112
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.303846
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.379102
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.403869
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.443113
+        }
+      ],
+      "NYUAD-ComNets/NYUAD_AI-generated_images_detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.001161
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.001491
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.001181
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.001137
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.995834
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.996808
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.003137
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.001262
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.009527
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.006911
+        },
+        {
+          "file": "ai/stable_diffusion__0c0f6ad98b.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.001524
+        },
+        {
+          "file": "ai/stable_diffusion__0e1bb98d1c.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.998272
+        },
+        {
+          "file": "ai/midjourney__0166abe8e4.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.998604
+        },
+        {
+          "file": "ai/midjourney__0182b12c6a.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.997986
+        },
+        {
+          "file": "ai/dall_e_3__01183e0a77.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.998807
+        },
+        {
+          "file": "ai/dall_e_3__09590a3cbe.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999577
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__00399e4c82.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.021812
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02426b4129.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.99958
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__079a5b2037.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.792751
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__0f79d0e5a5.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.349988
+        },
+        {
+          "file": "ai/gemini_nano_banana__005cb5be78.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.001362
+        },
+        {
+          "file": "ai/gemini_nano_banana__0a9d529753.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.001324
+        },
+        {
+          "file": "ai/flux__288179f29e.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.009554
+        },
+        {
+          "file": "ai/flux__3949b4de41.png",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.998978
+        },
+        {
+          "file": "ai/ideogram__02e1f69bcd.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.28989
+        },
+        {
+          "file": "ai/ideogram__28952e1add.webp",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.061215
+        },
+        {
+          "file": "ai/adobe_firefly__13b6880215.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.001192
+        },
+        {
+          "file": "ai/imagen__012af285aa.jpg",
+          "label": "ai",
+          "split": "val",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.725285
+        },
+        {
+          "file": "real/apple_iphone_phone__0033cb969a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.996696
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__00a2937493__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.013401
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__02afcbbb9f__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.001136
+        },
+        {
+          "file": "real/google_pixel_phone__014108d63a__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.00126
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__0226e9b441__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.001844
+        },
+        {
+          "file": "real/nikon_d7000_dslr__03da25987c__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.001489
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__00e5ef2bc8__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.995598
+        },
+        {
+          "file": "real/samsung_galaxy_phone__0094f60010__screenshot_sim.png",
+          "label": "real",
+          "split": "val",
+          "variant": "screenshot_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.00126
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__00887eb3b6__resized.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.001176
+        },
+        {
+          "file": "real/xiaomi_phone__015f92526c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "val",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.00683
+        }
+      ]
+    },
+    "test": {
+      "Smogy/SMOGY-Ai-images-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__0817cac012.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__08bbe5aebd.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/nikon_d7000_dslr__04465d07fb.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/nikon_d7000_dslr__074c525093.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 3e-06
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__0b6c542e3d.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__160750d1d5.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0637298cca.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0831854165.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__011fd7a113.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__0220e1c99c.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/apple_iphone_phone__006846e2f2.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/apple_iphone_phone__0142d70bb3.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/samsung_galaxy_phone__03a2ff218b.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 1e-05
+        },
+        {
+          "file": "real/samsung_galaxy_phone__1c4df22b6b.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__01addf738e.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__0499cfc97a.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__030e001b3f.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__041857dacc.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__053b04b12c.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__083b74cacc.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/stable_diffusion__199ecb22b9.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/stable_diffusion__1a236f4647.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/stable_diffusion__1f27e1cccc.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/stable_diffusion__1fff597e81.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/midjourney__05a3e24eb2.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/midjourney__066e722f88.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/midjourney__0c07fda0d5.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/midjourney__0f9674885f.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999918
+        },
+        {
+          "file": "ai/dall_e_3__107687d61b.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/dall_e_3__12f683b039.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/dall_e_3__24321f9bc1.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02b0b5bba9.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__049b061a90.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 4e-06
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__1046216642.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__10627d9d6c.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 5e-06
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__13bc65f2b8.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/gemini_nano_banana__0bf2834235.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/gemini_nano_banana__0f677a5347.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/gemini_nano_banana__127158d7ff.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/flux__3e59b391a5.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/flux__3e76d0f77d.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 1.0
+        },
+        {
+          "file": "ai/ideogram__2b3cf0d162.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.998429
+        },
+        {
+          "file": "ai/ideogram__390926a61d.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/adobe_firefly__1ad748cf5d.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.0
+        },
+        {
+          "file": "ai/adobe_firefly__534303af22.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 2e-06
+        },
+        {
+          "file": "ai/imagen__1adcbf8ac7.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999502
+        },
+        {
+          "file": "ai/imagen__3d877fbfc4.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 1.0
+        },
+        {
+          "file": "real/apple_iphone_phone__006846e2f2__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/apple_iphone_phone__0142d70bb3__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 2e-06
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__0817cac012__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__08bbe5aebd__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0637298cca__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 1e-06
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0831854165__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__01addf738e__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/google_pixel_phone__0499cfc97a__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 3e-06
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__030e001b3f__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__041857dacc__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/nikon_d7000_dslr__04465d07fb__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 1e-06
+        },
+        {
+          "file": "real/nikon_d7000_dslr__074c525093__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 4e-06
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__011fd7a113__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__0220e1c99c__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/samsung_galaxy_phone__03a2ff218b__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 1.3e-05
+        },
+        {
+          "file": "real/samsung_galaxy_phone__1c4df22b6b__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__0b6c542e3d__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__160750d1d5__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__053b04b12c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.0
+        },
+        {
+          "file": "real/xiaomi_phone__083b74cacc__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 1e-06
+        }
+      ],
+      "Ateeqq/ai-vs-human-image-detector": [
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__0817cac012.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.000806
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__08bbe5aebd.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.000812
+        },
+        {
+          "file": "real/nikon_d7000_dslr__04465d07fb.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.002094
+        },
+        {
+          "file": "real/nikon_d7000_dslr__074c525093.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.981029
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__0b6c542e3d.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.000154
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__160750d1d5.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 9.4e-05
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0637298cca.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.001527
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0831854165.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.004584
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__011fd7a113.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000295
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__0220e1c99c.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000835
+        },
+        {
+          "file": "real/apple_iphone_phone__006846e2f2.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.001204
+        },
+        {
+          "file": "real/apple_iphone_phone__0142d70bb3.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 4.8e-05
+        },
+        {
+          "file": "real/samsung_galaxy_phone__03a2ff218b.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.000252
+        },
+        {
+          "file": "real/samsung_galaxy_phone__1c4df22b6b.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 8.8e-05
+        },
+        {
+          "file": "real/google_pixel_phone__01addf738e.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.000414
+        },
+        {
+          "file": "real/google_pixel_phone__0499cfc97a.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.000152
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__030e001b3f.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.000164
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__041857dacc.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 5.7e-05
+        },
+        {
+          "file": "real/xiaomi_phone__053b04b12c.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 4e-05
+        },
+        {
+          "file": "real/xiaomi_phone__083b74cacc.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.00061
+        },
+        {
+          "file": "ai/stable_diffusion__199ecb22b9.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999999
+        },
+        {
+          "file": "ai/stable_diffusion__1a236f4647.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999554
+        },
+        {
+          "file": "ai/stable_diffusion__1f27e1cccc.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.999972
+        },
+        {
+          "file": "ai/stable_diffusion__1fff597e81.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Stable Diffusion",
+          "ai_score": 0.998714
+        },
+        {
+          "file": "ai/midjourney__05a3e24eb2.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999983
+        },
+        {
+          "file": "ai/midjourney__066e722f88.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.997768
+        },
+        {
+          "file": "ai/midjourney__0c07fda0d5.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999998
+        },
+        {
+          "file": "ai/midjourney__0f9674885f.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Midjourney",
+          "ai_score": 0.999993
+        },
+        {
+          "file": "ai/dall_e_3__107687d61b.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999996
+        },
+        {
+          "file": "ai/dall_e_3__12f683b039.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999985
+        },
+        {
+          "file": "ai/dall_e_3__24321f9bc1.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "DALL-E 3",
+          "ai_score": 0.999989
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__02b0b5bba9.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.999913
+        },
+        {
+          "file": "ai/bing_image_creator_dall_e_3__049b061a90.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Bing Image Creator (DALL-E 3)",
+          "ai_score": 0.002048
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__1046216642.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.999998
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__10627d9d6c.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.999464
+        },
+        {
+          "file": "ai/chatgpt_gpt_image__13bc65f2b8.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "ChatGPT / GPT Image",
+          "ai_score": 0.999901
+        },
+        {
+          "file": "ai/gemini_nano_banana__0bf2834235.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.999843
+        },
+        {
+          "file": "ai/gemini_nano_banana__0f677a5347.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.999851
+        },
+        {
+          "file": "ai/gemini_nano_banana__127158d7ff.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Gemini / Nano Banana",
+          "ai_score": 0.999914
+        },
+        {
+          "file": "ai/flux__3e59b391a5.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.997778
+        },
+        {
+          "file": "ai/flux__3e76d0f77d.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Flux",
+          "ai_score": 0.999712
+        },
+        {
+          "file": "ai/ideogram__2b3cf0d162.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999968
+        },
+        {
+          "file": "ai/ideogram__390926a61d.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Ideogram",
+          "ai_score": 0.999342
+        },
+        {
+          "file": "ai/adobe_firefly__1ad748cf5d.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.002783
+        },
+        {
+          "file": "ai/adobe_firefly__534303af22.jpg",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Adobe Firefly",
+          "ai_score": 0.999818
+        },
+        {
+          "file": "ai/imagen__1adcbf8ac7.png",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999989
+        },
+        {
+          "file": "ai/imagen__3d877fbfc4.webp",
+          "label": "ai",
+          "split": "test",
+          "variant": "original",
+          "stratum": "Imagen",
+          "ai_score": 0.999991
+        },
+        {
+          "file": "real/apple_iphone_phone__006846e2f2__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.001238
+        },
+        {
+          "file": "real/apple_iphone_phone__0142d70bb3__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Apple iPhone (phone)",
+          "ai_score": 0.000113
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__0817cac012__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.000948
+        },
+        {
+          "file": "real/canon_eos_5d_mark_ii_dslr__08bbe5aebd__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Canon EOS 5D Mark II (DSLR)",
+          "ai_score": 0.001058
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0637298cca__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.000176
+        },
+        {
+          "file": "real/fujifilm_x_t1_mirrorless__0831854165__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Fujifilm X-T1 (mirrorless)",
+          "ai_score": 0.004002
+        },
+        {
+          "file": "real/google_pixel_phone__01addf738e__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.000402
+        },
+        {
+          "file": "real/google_pixel_phone__0499cfc97a__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Google Pixel (phone)",
+          "ai_score": 0.001704
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__030e001b3f__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 0.000191
+        },
+        {
+          "file": "real/huawei_p20_pro_phone__041857dacc__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Huawei P20 Pro (phone)",
+          "ai_score": 6.4e-05
+        },
+        {
+          "file": "real/nikon_d7000_dslr__04465d07fb__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.000226
+        },
+        {
+          "file": "real/nikon_d7000_dslr__074c525093__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Nikon D7000 (DSLR)",
+          "ai_score": 0.985111
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__011fd7a113__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.000321
+        },
+        {
+          "file": "real/olympus_e_m5_mirrorless__0220e1c99c__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Olympus E-M5 (mirrorless)",
+          "ai_score": 0.982437
+        },
+        {
+          "file": "real/samsung_galaxy_phone__03a2ff218b__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.000286
+        },
+        {
+          "file": "real/samsung_galaxy_phone__1c4df22b6b__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Samsung Galaxy (phone)",
+          "ai_score": 0.000134
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__0b6c542e3d__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.001927
+        },
+        {
+          "file": "real/sony_ilce_7_mirrorless__160750d1d5__resized.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "resized",
+          "stratum": "Sony ILCE-7 (mirrorless)",
+          "ai_score": 0.000256
+        },
+        {
+          "file": "real/xiaomi_phone__053b04b12c__whatsapp_sim.jpg",
+          "label": "real",
+          "split": "test",
+          "variant": "whatsapp_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 4.4e-05
+        },
+        {
+          "file": "real/xiaomi_phone__083b74cacc__screenshot_sim.png",
+          "label": "real",
+          "split": "test",
+          "variant": "screenshot_sim",
+          "stratum": "Xiaomi (phone)",
+          "ai_score": 0.000693
+        }
+      ]
+    }
+  }
+}

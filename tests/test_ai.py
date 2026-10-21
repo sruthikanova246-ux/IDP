@@ -27,15 +27,17 @@ def test_model_unavailable_fallback(tmp_path, png_no_exif):
 def test_real_inference_outputs(real_detector):
     result = real_detector.predict(gradient((300, 300)))
     assert result["status"] == "ok"
-    assert {s["label"] for s in result["scores"]} == {"ai", "hum"}
-    total = sum(s["softmax"] for s in result["scores"])
+    assert {s["label"] for s in result["scores"]} == {"artificial", "human"}
+    total = sum(s["score"] for s in result["scores"])
     assert abs(total - 1.0) < 1e-4
-    assert result["ai_score"] == next(s["softmax"] for s in result["scores"] if s["label"] == "ai")
-    assert result["real_score"] == next(s["softmax"] for s in result["scores"] if s["label"] == "hum")
-    expected = "Likely AI-generated" if result["ai_score"] > result["real_score"] else "Likely real"
+    # the AI score is the model's own output for the 'artificial' class - not relabelled or flipped
+    assert abs(result["ai_score"] - next(s["score"] for s in result["scores"] if s["label"] == "artificial")) < 1e-6
+    assert abs(result["real_score"] - next(s["score"] for s in result["scores"] if s["label"] == "human")) < 1e-5
+    expected = "Likely AI-generated" if result["ai_score"] > 0.5 else "Likely real"
     assert result["prediction_label"] == expected
     assert result["confidence"] is None  # never invented
     assert result["model_input_size"] == "224x224"
+    assert result["model_id"] == "Smogy/SMOGY-Ai-images-detector"
     # deterministic: same image -> same output
     again = real_detector.predict(gradient((300, 300)))
     assert again["scores"] == result["scores"]
@@ -48,7 +50,8 @@ def test_real_inference_end_to_end(tmp_path, real_detector, jpeg_with_exif):
     rid = resp.get_json()["redirect"].rsplit("/", 1)[-1]
     rec = app.db.get(rid)
     assert rec["ai_status"] == "ok"
-    assert rec["ai_model_id"] == "Ateeqq/ai-vs-human-image-detector"
+    assert rec["ai_model_id"] == "Smogy/SMOGY-Ai-images-detector"
+    assert rec["ai_model_revision"] == "fb9aadb85642d707f05b40191689d60f75b9a3e6"
     assert abs(rec["ai_score"] + rec["real_score"] - 1.0) < 1e-4
     page = client.get(f"/analysis/{rid}").get_data(as_text=True)
     assert f"{rec['ai_score'] * 100:.1f}%" in page and f"{rec['real_score'] * 100:.1f}%" in page
@@ -57,3 +60,22 @@ def test_real_inference_end_to_end(tmp_path, real_detector, jpeg_with_exif):
     assert rep["ai_detection"]["ai_score"] == rec["ai_score"]
     txt = client.get(f"/report/{rid}/download/txt").get_data(as_text=True)
     assert f"AI-generated score:  {rec['ai_score'] * 100:.2f}%" in txt
+
+
+def test_label_mapping_rules():
+    """The AI score must come from the label that means AI - never from position or a flipped label."""
+    from ai_detector import _label_mapping
+    m = _label_mapping({0: "artificial", 1: "human"}, 2, None)
+    assert m["kind"] == "softmax" and m["ai_indices"] == [0]
+    m = _label_mapping({0: "human", 1: "artificial"}, 2, None)   # order swapped -> index follows the label
+    assert m["ai_indices"] == [1]
+    m = _label_mapping({0: "dalle", 1: "real", 2: "sd"}, 3, None)  # AI = 1 - P(real)
+    assert m["ai_indices"] == [0, 2]
+    assert _label_mapping({0: "LABEL_0"}, 1, None)["kind"] == "unmapped"  # unreviewed sigmoid: no guess
+    assert _label_mapping({0: "cat", 1: "dog"}, 2, None)["kind"] == "unmapped"
+
+
+def test_inconclusive_band_is_a_display_rule():
+    from ai_detector import decide
+    assert decide(0.9) == "ai" and decide(0.1) == "real" and decide(0.5) == "real"
+    assert decide(0.5, (0.35, 0.65)) == "inconclusive" and decide(0.7, (0.35, 0.65)) == "ai"

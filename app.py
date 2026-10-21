@@ -1,5 +1,6 @@
 """Flask routes and application factory for the Digital Evidence Integrity System."""
 import hmac
+import json
 import logging
 import secrets
 from logging.handlers import RotatingFileHandler
@@ -11,7 +12,7 @@ from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 import analyzer
 import reports
-from ai_detector import AIDetector, CONFIDENCE_NOTE, DECISION_RULE, SCORE_NOTE
+from ai_detector import AIDetector, CONFIDENCE_NOTE, SCORE_NOTE
 from config import load_config
 from database import Database
 from heuristics import WEIGHTS
@@ -54,6 +55,19 @@ def _setup_logging(app):
 
 
 # --------------------------------------------------------------------- helpers
+EVALUATION_FILE = Path(__file__).resolve().parent / "evaluation" / "results.json"
+
+
+def _load_evaluation():
+    """Measured detector results (evaluation/compare_models.py); None if not generated."""
+    try:
+        data = json.loads(EVALUATION_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    data.pop("per_image", None)
+    return data
+
+
 def _csrf_token():
     if "_csrf" not in session:
         session["_csrf"] = secrets.token_urlsafe(32)
@@ -213,9 +227,9 @@ def _register_routes(app):
 
     @app.get("/methodology")
     def methodology():
-        return render_template("methodology.html", limitations=reports.LIMITATIONS,
+        return render_template("methodology.html", evaluation=_load_evaluation(), limitations=reports.LIMITATIONS,
                                custody_note=reports.CUSTODY_NOTE, weights=WEIGHTS,
-                               score_note=SCORE_NOTE, decision_rule=DECISION_RULE,
+                               score_note=SCORE_NOTE,
                                confidence_note=CONFIDENCE_NOTE)
 
     @app.get("/api/model-status")

@@ -112,3 +112,42 @@ def test_bad_ids_and_pages(tmp_path):
         assert resp.status_code == 200
         assert "default-src 'self'" in resp.headers["Content-Security-Policy"]
     assert "No analyses stored yet" in client.get("/history").get_data(as_text=True)
+
+
+def test_old_v1_0_records_still_open(tmp_path, jpeg_with_exif):
+    """Reports saved by v1.0 (Ateeqq model, scores stored under 'softmax') must still render and download."""
+    import sqlite3
+    app = make_app(tmp_path)
+    client = app.test_client()
+    rid = _record_id(upload(client, "old.jpg", jpeg_with_exif))
+    old_ai = {
+        "status": "ok", "model_id": "Ateeqq/ai-vs-human-image-detector",
+        "revision": "60e82406916921b823616bee33397baab38af3f0", "commit_hash": None,
+        "architecture": "SiglipForImageClassification",
+        "scores": [{"index": 0, "label": "ai", "logit": 5.1606, "softmax": 0.999321},
+                   {"index": 1, "label": "hum", "logit": -2.1334, "softmax": 0.000679}],
+        "predicted_label": "ai", "predicted_index": 0, "top_score": 0.999321, "inference_ms": 304.4,
+        "model_input_size": "224x224", "score_note": "old note", "decision_rule": "argmax",
+        "known_limitations": ["old limitation"], "confidence": None, "confidence_note": "Not independently calibrated.",
+        "ai_score": 0.999321, "real_score": 0.000679, "predicted_class": "ai_generated",
+        "prediction_label": "Likely AI-generated",
+    }
+    rec = app.db.get(rid)
+    report, analysis = rec["report"], rec["analysis"]
+    report["ai_detection"] = old_ai
+    report["schema_version"] = "1.0"
+    analysis["ai"] = old_ai
+    with sqlite3.connect(app.config["DATABASE_PATH"]) as conn:
+        conn.execute("UPDATE analyses SET report_json = ?, analysis_json = ?, ai_status = 'ok', ai_score = ?, "
+                     "real_score = ?, ai_prediction = ?, ai_model_id = ? WHERE id = ?",
+                     (json.dumps(report), json.dumps(analysis), 0.999321, 0.000679, "Likely AI-generated",
+                      "Ateeqq/ai-vs-human-image-detector", rid))
+    for url in (f"/analysis/{rid}", f"/report/{rid}", "/history", "/"):
+        resp = client.get(url)
+        assert resp.status_code == 200, url
+    page = client.get(f"/report/{rid}").get_data(as_text=True)
+    assert "0.999321" in page and "Ateeqq/ai-vs-human-image-detector" in page
+    txt = client.get(f"/report/{rid}/download/txt").get_data(as_text=True)
+    assert "score=0.999321" in txt and "Ateeqq/ai-vs-human-image-detector" in txt
+    assert client.get(f"/report/{rid}/download/pdf").status_code == 200
+    assert json.loads(client.get(f"/report/{rid}/download/json").data)["schema_version"] == "1.0"

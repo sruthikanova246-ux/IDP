@@ -5,8 +5,8 @@ import textwrap
 from datetime import datetime, timezone
 
 APP_NAME = "Digital Evidence Integrity System"
-APP_VERSION = "1.0.0"
-SCHEMA_VERSION = "1.0"
+APP_VERSION = "1.1.0"
+SCHEMA_VERSION = "1.1"
 
 ASSESSMENT_TYPE = "Preliminary automated assessment - not a verification of authenticity"
 
@@ -71,6 +71,11 @@ def to_json(report):
     return json.dumps(report, indent=2, ensure_ascii=False)
 
 
+def score_of(entry):
+    """Per-output score; reports created before v1.1 stored it under 'softmax'."""
+    return entry.get("score", entry.get("softmax"))
+
+
 def pct(value):
     return "n/a" if value is None else f"{value * 100:.2f}%"
 
@@ -114,8 +119,9 @@ def to_txt(report):
 
     section("3. AI-GENERATED IMAGE DETECTION")
     model = report["ai_model"]
-    out += [f"Model:     {model.get('model_id')}",
-            f"Revision:  {model.get('commit_hash') or model.get('revision')}",
+    # Name the model that produced this stored result (falls back to the detector status).
+    out += [f"Model:     {ai.get('model_id') or model.get('model_id')}",
+            f"Revision:  {ai.get('commit_hash') or ai.get('revision') or model.get('commit_hash') or model.get('revision')}",
             f"Status:    {ai['status']}"]
     if ai["status"] == "ok":
         out += [f"Prediction:          {ai['prediction_label']}",
@@ -123,16 +129,18 @@ def to_txt(report):
                 f"Real-image score:    {pct(ai.get('real_score'))}",
                 "Model confidence:    Not independently calibrated (only class scores are available)",
                 f"Decision rule:       {ai['decision_rule']}",
-                "Raw model output:"]
+                f"Output mapping:      {ai.get('output_mapping', 'softmax over the model classes')}",
+                f"Raw model output ({ai.get('output_type', 'softmax')}):"]
         for s in ai["scores"]:
-            out.append(f"  class {s['index']} '{s['label']}': logit={s['logit']:.4f}  softmax={s['softmax']:.6f}")
+            out.append(f"  output {s['index']} '{s['label']}': logit={s['logit']:.4f}  "
+                       f"score={score_of(s):.6f}")
         out.append(f"Inference time: {ai['inference_ms']} ms; model input {ai.get('model_input_size')}")
         out += textwrap.wrap("Note: " + ai["score_note"], 78)
     else:
         out.append("AI analysis unavailable. No AI prediction was produced.")
         out += textwrap.wrap("Reason: " + str(ai.get("message")), 78)
     out.append("Known model limitations:")
-    for item in model.get("known_limitations") or []:
+    for item in ai.get("known_limitations") or model.get("known_limitations") or []:
         out += textwrap.wrap(item, 76, initial_indent="- ", subsequent_indent="  ")
 
     section("4. HEURISTIC FINDINGS")

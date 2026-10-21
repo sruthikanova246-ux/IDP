@@ -27,14 +27,14 @@ no step is allowed to fill in for another when it fails.</p>
 
 <section class="panel">
   <h2>4. AI-generated-image classifier</h2>
-  <p>Model: <code>{{ model_status.model_id }}</code> at revision <code>{{ model_status.revision }}</code>
-  (SigLIP image classifier, Apache-2.0, labels <code>ai</code> and <code>hum</code>). It is loaded once per server process.
-  The image has EXIF orientation applied, transparency flattened onto white, and is resized to 224×224 by the model's own
-  preprocessor.</p>
+  <p>Model: <strong>{{ model_status.display_name }}</strong> — <code>{{ model_status.model_id }}</code> at pinned revision
+  <code>{{ model_status.revision }}</code>. It is loaded once per server process. The image has EXIF orientation applied and
+  transparency flattened onto white, then goes through the model's own image processor
+  (Pillow backend pinned so results do not change if other libraries are installed).</p>
   <ul>
-    <li><strong>AI-generated score / Real-image score:</strong> the softmax outputs for the two classes. They always sum to 100%
-      and are two views of one output, not independent measurements.</li>
-    <li><strong>Prediction:</strong> {{ decision_rule }}</li>
+    <li><strong>AI-generated score / Real-image score:</strong> two views of one model output; they always sum to 100%
+      and are not independent measurements.{% if model_status.output_mapping %} {{ model_status.output_mapping.description }}{% endif %}</li>
+    <li><strong>Prediction:</strong> {{ model_status.decision_rule }}</li>
     <li><strong>Model confidence:</strong> {{ confidence_note }}</li>
     <li>{{ score_note }}</li>
   </ul>
@@ -42,6 +42,85 @@ no step is allowed to fill in for another when it fails.</p>
   <em>AI analysis unavailable</em> and no score is recorded. Heuristics are never substituted for the model.</p>
   <h3>Known model limitations</h3>
   <ul>{% for l in model_status.known_limitations %}<li>{{ l }}</li>{% endfor %}</ul>
+</section>
+
+<section class="panel" aria-labelledby="eval-h">
+  <h2 id="eval-h">Measured accuracy on this project's evaluation set</h2>
+  {% if evaluation %}
+  {% set d = evaluation.dataset %}
+  <p class="alert alert-warn">Small evaluation set, measured {{ evaluation.generated_at[:10] }}: {{ d.n_real }} real photographs
+    (30 camera/phone originals from 10 devices plus 30 simulated WhatsApp, screenshot and resized copies) and {{ d.n_ai }}
+    AI-generated images from 10 generators, all from Wikimedia Commons with recorded licenses
+    (<code>tests/eval_data/labels.csv</code>). Validation split: {{ d.val.n_real }} real / {{ d.val.n_ai }} AI; test split:
+    {{ d.test.n_real }} real / {{ d.test.n_ai }} AI. One test photo is about {{ '%.1f'|format(100 / d.test.n_real) }} percentage
+    points, so every figure has a wide margin of error, and results may be lower on other kinds of images.</p>
+  <p>Target: balanced accuracy &ge; 70% and real-photo accuracy &ge; 70% on the test split, with "Inconclusive" counted as a
+    non-answer. Balanced accuracy = average of real-photo accuracy and AI-image accuracy.
+    <strong>{{ 'Target met on the test split.' if evaluation.target.met_on_test else 'Target NOT met on the test split.' }}</strong></p>
+
+  {% macro row(name, m) %}
+    <tr><td>{{ name }}</td><td>{{ m.confusion.real.real }}/{{ m.n_real }} ({{ m.real_accuracy|pct }})</td>
+      <td>{% if m.n_ai %}{{ m.confusion.ai.ai }}/{{ m.n_ai }} ({{ m.ai_accuracy|pct }}){% else %}—{% endif %}</td>
+      <td>{{ m.balanced_accuracy|pct if m.balanced_accuracy is not none else '—' }}</td>
+      <td>{{ m.false_positive_rate|pct }}</td><td>{{ m.inconclusive_share|pct }}</td></tr>
+  {% endmacro %}
+  <h3>Model in use on the test split (scored once)</h3>
+  <div class="table-wrap"><table class="mini">
+    <thead><tr><th>Group</th><th>Real photos correct</th><th>AI images correct</th><th>Balanced accuracy</th>
+      <th>False-positive rate</th><th>Inconclusive</th></tr></thead>
+    <tbody>
+      {{ row('All test images', evaluation.chosen_test.all) }}
+      {{ row('Camera/phone originals + AI', evaluation.chosen_test.originals) }}
+      {{ row('Stress group (real only: WhatsApp-style, screenshot, resized)', evaluation.chosen_test.stress_real_only) }}
+      {% set a = evaluation.chosen_test.all.answered_only %}
+      <tr><td>Answered images only (inconclusive excluded)</td><td>{{ a.real_accuracy|pct }} of {{ a.n_real }}</td>
+        <td>{{ a.ai_accuracy|pct }} of {{ a.n_ai }}</td><td>{{ a.balanced_accuracy|pct }}</td><td>—</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p>{% if evaluation.chosen_band %}Inconclusive band {{ evaluation.chosen_band }} (chosen on validation).
+    {% else %}No inconclusive band is used: on the validation split none of the candidate bands reduced wrong calls
+    (this model's scores were all below 5% or above 95%), so every image gets an answer.{% endif %}
+    {{ evaluation.selection_note }}</p>
+
+  {% if evaluation.baseline_test %}
+  <h3>Before: previous model on the same test split</h3>
+  <div class="table-wrap"><table class="mini">
+    <thead><tr><th>Group</th><th>Real photos correct</th><th>AI images correct</th><th>Balanced accuracy</th>
+      <th>False-positive rate</th><th>Inconclusive</th></tr></thead>
+    <tbody>
+      {{ row(evaluation.baseline_test.id ~ ', all test images', evaluation.baseline_test.test.all) }}
+      {{ row('Stress group (real only)', evaluation.baseline_test.test.stress_real_only) }}
+    </tbody>
+  </table></div>
+  {% set b = evaluation.candidates|selectattr('id', 'equalto', evaluation.baseline_test.id)|first %}
+  <p>The previous model did better on this test split than on the validation split, where it labelled
+    {{ b.val.confusion.real.ai }} of {{ b.val.n_real }} real photographs as AI-generated.
+    The difference between the two splits shows how much these small samples vary. The model choice was made on the
+    validation split before the test split was scored, and was not changed afterwards.</p>
+  {% endif %}
+
+  <h3>All candidates, validation split (used for the choice)</h3>
+  <div class="table-wrap"><table class="mini">
+    <thead><tr><th>Model (pinned revision)</th><th>License</th><th>Real acc.</th><th>AI acc.</th><th>Balanced</th>
+      <th>FPR</th><th>AUC</th></tr></thead>
+    <tbody>
+    {% for c in evaluation.candidates %}
+      <tr>
+        <td><code>{{ c.id }}</code>{% if c.id == evaluation.chosen_model %} <strong>(in use)</strong>{% endif %}</td>
+        <td>{{ c.license }}</td>
+        {% if c.error %}<td colspan="5">Could not be evaluated: {{ c.error }}</td>
+        {% else %}
+        <td>{{ c.val.real_accuracy|pct }}</td><td>{{ c.val.ai_accuracy|pct }}</td><td>{{ c.val.balanced_accuracy|pct }}</td>
+        <td>{{ c.val.false_positive_rate|pct }}</td><td>{{ '%.3f'|format(c.val.auc) }}</td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="muted">Per-image scores and the full decision rules: <code>evaluation/results.json</code>.</p>
+  {% else %}
+  <p class="empty">No evaluation results found (evaluation/results.json). Run <code>python -m evaluation.compare_models</code>.</p>
+  {% endif %}
 </section>
 
 <section class="panel">

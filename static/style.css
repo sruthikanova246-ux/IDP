@@ -77,11 +77,11 @@ h3 { font-size: 1rem; margin: 1.2em 0 0.4em; }
 .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;
   border: 1px solid var(--border); vertical-align: middle; }
 .badge-ready, .level-no_strong_indicators, .band-low { background: var(--ok-bg); border-color: var(--ok-border); }
-.badge-loading, .badge-not_loaded, .level-limited, .band-moderate { background: var(--warn-bg); border-color: var(--warn-border); }
+.badge-loading, .badge-not_loaded, .level-limited, .level-inconclusive, .band-moderate { background: var(--warn-bg); border-color: var(--warn-border); }
 .badge-failed, .level-review, .level-conflicting, .band-elevated { background: var(--error-bg); border-color: var(--error-border); }
 .summary { border-left-width: 5px; }
 .level-border-review, .level-border-conflicting { border-left-color: var(--error-border); }
-.level-border-limited { border-left-color: var(--warn-border); }
+.level-border-limited, .level-border-inconclusive { border-left-color: var(--warn-border); }
 .level-border-no_strong_indicators { border-left-color: var(--ok-border); }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 16px 0; }
