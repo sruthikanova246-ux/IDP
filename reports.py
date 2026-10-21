@@ -184,6 +184,17 @@ def to_txt(report):
 
     section("9. CUSTODY NOTE")
     out += textwrap.wrap(report["custody_note"], 78)
+
+    integ = report.get("report_file_integrity")
+    if integ is not None:  # added when exporting TXT/JSON; never part of the PDF the hash describes
+        section("10. PDF REPORT FILE INTEGRITY")
+        out.append(f"PDF report SHA-256:   {integ.get('pdf_sha256') or 'not generated yet'}")
+        if integ.get("pdf_generated_at"):
+            out.append(f"PDF generated (UTC):  {integ['pdf_generated_at']}")
+            out.append(f"Original image SHA-256: {integ['original_image_sha256']}")
+        out += textwrap.wrap(integ["note"], 78)
+        if integ.get("limitation"):
+            out += textwrap.wrap(integ["limitation"], 78)
     out.append("")
     return "\n".join(out)
 

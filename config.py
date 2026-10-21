@@ -44,6 +44,7 @@ def load_config(overrides=None):
         "INSTANCE_DIR": instance_dir,
         "UPLOAD_DIR": instance_dir / "uploads",
         "DERIVED_DIR": instance_dir / "derived",
+        "REPORTS_DIR": instance_dir / "reports",
         "DATABASE_PATH": instance_dir / "evidence.db",
         "LOG_PATH": instance_dir / "app.log",
         "MAX_UPLOAD_MB": int(os.environ.get("DEI_MAX_UPLOAD_MB", "20")),
@@ -61,10 +62,10 @@ def load_config(overrides=None):
         "TESTING": False,
     }
     cfg.update(overrides)
-    for key in ("UPLOAD_DIR", "DERIVED_DIR", "DATABASE_PATH", "LOG_PATH"):
+    for key in ("UPLOAD_DIR", "DERIVED_DIR", "REPORTS_DIR", "DATABASE_PATH", "LOG_PATH"):
         cfg[key] = Path(cfg[key])
-    cfg["UPLOAD_DIR"].mkdir(parents=True, exist_ok=True)
-    cfg["DERIVED_DIR"].mkdir(parents=True, exist_ok=True)
+    for key in ("UPLOAD_DIR", "DERIVED_DIR", "REPORTS_DIR"):
+        cfg[key].mkdir(parents=True, exist_ok=True)
     if "SECRET_KEY" not in cfg:
         cfg["SECRET_KEY"] = _load_secret_key(instance_dir)
     cfg["MAX_CONTENT_LENGTH"] = cfg["MAX_UPLOAD_MB"] * 1024 * 1024

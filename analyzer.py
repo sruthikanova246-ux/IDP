@@ -10,6 +10,7 @@ from PIL import Image
 
 import consistency
 import heuristics
+import report_store
 import reports
 from integrity import md5_bytes, sha256_bytes, sha256_file, validate_upload
 from metadata import extract_metadata
@@ -90,6 +91,12 @@ def analyse_upload(filename, data, *, config, db, detector):
         ela_path.unlink(missing_ok=True)
         raise
     log.info("Analysed %s as %s (sha256=%s, ai=%s)", display_filename(filename), report_id, sha256, ai["status"])
+    # Generate and hash the PDF once, now. If this fails the analysis is still kept; the PDF is then
+    # generated (and recorded) on its first download.
+    try:
+        report_store.ensure_pdf(db.get(report_id), config=config, db=db)
+    except Exception:
+        log.exception("PDF generation failed for %s", report_id)
     return report_id
 
 
@@ -103,6 +110,7 @@ def delete_analysis(record_id, *, config, db):
     paths = [(upload_dir, record["stored_filename"])]
     if record.get("derived_filename"):
         paths.append((derived_dir, record["derived_filename"]))
+    report_store.remove(record, config=config, db=db)
     db.delete(record_id)
     for base, name in paths:
         target = (base / name).resolve()

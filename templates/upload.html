@@ -1,36 +1,47 @@
 {% extends "base.html" %}
 {% from "_macros.html" import model_badge %}
-{% block title %}Upload evidence{% endblock %}
+{% block title %}Upload{% endblock %}
 {% block content %}
-<h1>Upload evidence</h1>
-<p class="lead">Allowed formats: {{ allowed|join(', ') }}. Maximum size {{ max_mb }} MB.
-The file is hashed as soon as the server receives it and is stored under a random internal name.</p>
-<p>{{ model_badge(model_status) }}
-  {% if model_status.state != 'ready' and model_status.state != 'disabled' %}
-  <span class="muted">If the model is not ready, the analysis waits for it to load or reports it as unavailable.</span>
-  {% endif %}
-</p>
+<div class="narrow center">
+  <div class="page-head"><div><h1>Upload an image</h1></div><div>{{ model_badge(model_status) }}</div></div>
 
-<form id="upload-form" class="panel" method="post" action="{{ url_for('upload_post') }}" enctype="multipart/form-data"
-      data-max-bytes="{{ max_mb * 1024 * 1024 }}" data-allowed="{{ allowed|join(',') }}" novalidate>
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  <label for="evidence" class="label">Image file</label>
-  <input id="evidence" name="evidence" type="file" required
-         accept="{% for e in allowed %}.{{ e }}{% if not loop.last %},{% endif %}{% endfor %}"
-         aria-describedby="file-help file-error">
-  <p id="file-help" class="muted">Choose one image. Nothing in the file is executed.</p>
-  <p id="file-error" class="field-error" role="alert" hidden></p>
+  <form id="upload-form" method="post" action="{{ url_for('upload_post') }}" enctype="multipart/form-data"
+        data-max-bytes="{{ max_mb * 1024 * 1024 }}" data-allowed="{{ allowed|join(',') }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-  <div id="preview" class="preview" hidden>
-    <img id="preview-img" alt="Preview of the selected image">
-    <p id="preview-meta" class="muted"></p>
-  </div>
+    <label class="dropzone" id="dropzone" for="evidence">
+      <span class="icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg>
+      </span>
+      <strong>Drop an image or click to browse</strong>
+      <span class="small muted" id="file-help">{{ allowed|map('upper')|join(', ') }} · up to {{ max_mb }} MB</span>
+      <input id="evidence" name="evidence" type="file" required aria-describedby="file-help file-error"
+             accept="{% for e in allowed %}.{{ e }}{% if not loop.last %},{% endif %}{% endfor %}">
+    </label>
 
-  <button id="submit-btn" class="btn btn-primary" type="submit">Analyse image</button>
+    <div id="selected" class="panel gap-top" hidden>
+      <div class="selected">
+        <img id="preview-img" alt="Preview of the selected image">
+        <div>
+          <p id="preview-name" class="gap-bottom"></p>
+          <div class="row">
+            <button id="submit-btn" class="btn btn-primary" type="submit">Analyse</button>
+            <button id="clear-btn" class="btn btn-ghost" type="button">Choose another</button>
+          </div>
+        </div>
+      </div>
+      <div id="progress" hidden>
+        <ol class="steps" aria-hidden="true">
+          <li data-step="upload">Upload</li><li data-step="analyse">Analyse</li><li data-step="done">Result</li>
+        </ol>
+        <div class="bar" role="progressbar" aria-label="Upload and analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-bar">
+          <div id="progress-fill" class="bar-fill"></div>
+        </div>
+        <p id="progress-text" class="small muted gap-top" aria-live="polite">Uploading…</p>
+      </div>
+    </div>
 
-  <div id="progress" class="progress-block" hidden aria-live="polite">
-    <div class="bar"><div id="progress-fill" class="bar-fill bar-neutral"></div></div>
-    <p id="progress-text">Uploading…</p>
-  </div>
-</form>
+    <p id="file-error" class="field-error" role="alert" hidden></p>
+  </form>
+</div>
 {% endblock %}

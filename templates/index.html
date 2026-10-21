@@ -2,56 +2,44 @@
 {% from "_macros.html" import model_badge, level_badge %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
-<h1>Dashboard</h1>
-<p class="lead">Upload a digital image to record its SHA-256 fingerprint, extract its metadata, run a pretrained
-AI-generated-image classifier and cross-check the findings in an explainable integrity report.</p>
-<p><a class="btn btn-primary" href="{{ url_for('upload') }}">Upload evidence</a></p>
-
-<div class="stats">
-  <div><span class="stat">{{ stats.total }}</span> analyses stored</div>
-  <div><span class="stat">{{ stats.unique_files }}</span> unique files (by SHA-256)</div>
-  <div><span class="stat">{{ stats.ai_ran }}</span> with AI result</div>
-  <div><span class="stat">{{ stats.needs_review }}</span> marked for further review</div>
-</div>
-
-<section class="panel" aria-labelledby="model-h">
-  <h2 id="model-h">AI model status</h2>
-  <p>{{ model_badge(model_status) }} <code>{{ model_status.model_id }}</code></p>
-  <p class="muted" data-model-detail>
-    {% if model_status.state == 'ready' %}Loaded in {{ model_status.load_seconds }} s ({{ model_status.parameters_millions }}M parameters, torch {{ model_status.torch_version }}).
-    {% elif model_status.state == 'failed' %}{{ model_status.error }}
-    {% elif model_status.state == 'loading' %}The model is loading. The first load can take several minutes while weights are downloaded.
-    {% elif model_status.state == 'disabled' %}AI detection is turned off; uploads get metadata and hash analysis only.
-    {% else %}The model will load on the first analysis.{% endif %}
+<section class="hero">
+  <h1>Check an image's integrity</h1>
+  <p>Fingerprint the file, read its metadata and run an AI-image detector. Every finding is explained.</p>
+  <a class="btn btn-primary" href="{{ url_for('upload') }}">Upload an image</a>
+  <p class="small gap-top">{{ model_badge(model_status) }}
+    {% if model_status.state == 'failed' %}
+      <button type="button" class="link-btn" data-model-retry data-csrf="{{ csrf_token() }}" data-url="{{ url_for('model_load') }}">Retry</button>
+    {% endif %}
   </p>
-  {% if model_status.state == 'failed' %}
-  <button type="button" class="btn" data-model-retry data-csrf="{{ csrf_token() }}"
-          data-url="{{ url_for('model_load') }}">Retry loading model</button>
-  {% endif %}
 </section>
 
+<div class="stats gap-bottom" aria-label="Totals">
+  <div class="stat"><b>{{ stats.total }}</b><span>Analyses</span></div>
+  <div class="stat"><b>{{ stats.unique_files }}</b><span>Unique files</span></div>
+  <div class="stat"><b>{{ stats.ai_ran }}</b><span>With AI result</span></div>
+  <div class="stat"><b>{{ stats.needs_review }}</b><span>Marked for review</span></div>
+</div>
+
 <section aria-labelledby="recent-h">
-  <h2 id="recent-h">Recent analyses</h2>
+  <div class="page-head"><h2 id="recent-h">Recent</h2>{% if recent %}<a href="{{ url_for('history') }}">All history</a>{% endif %}</div>
   {% if recent %}
   <div class="table-wrap">
-  <table>
-    <thead><tr><th>Report</th><th>File</th><th>Received</th><th>AI prediction</th><th>Assessment</th></tr></thead>
-    <tbody>
-    {% for r in recent %}
-      <tr>
-        <td><a href="{{ url_for('analysis', record_id=r.id) }}"><code>{{ r.id }}</code></a></td>
-        <td>{{ r.original_filename }}</td>
-        <td>{{ r.uploaded_at|when }}</td>
-        <td>{% if r.ai_status == 'ok' %}{{ r.ai_prediction }} ({{ r.ai_score|pct }} AI){% else %}<span class="muted">unavailable</span>{% endif %}</td>
-        <td>{{ level_badge(r.summary_level) }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+    <table>
+      <thead><tr><th>File</th><th>Received</th><th>AI verdict</th><th>Assessment</th></tr></thead>
+      <tbody>
+      {% for r in recent %}
+        <tr>
+          <td><a class="row-link" href="{{ url_for('analysis', record_id=r.id) }}">{{ r.original_filename }}</a></td>
+          <td class="small nowrap">{{ r.uploaded_at|when }}</td>
+          <td>{% if r.ai_status == 'ok' %}{{ r.ai_prediction }}{% else %}<span class="muted">Unavailable</span>{% endif %}</td>
+          <td>{{ level_badge(r.summary_level) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
   </div>
-  <p><a href="{{ url_for('history') }}">View full history</a></p>
   {% else %}
-  <p class="empty">No analyses yet. <a href="{{ url_for('upload') }}">Upload your first image</a>.</p>
+  <div class="panel empty"><strong>No analyses yet</strong>Upload an image to create the first report.</div>
   {% endif %}
 </section>
 {% endblock %}

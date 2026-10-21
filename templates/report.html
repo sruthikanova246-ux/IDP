@@ -1,110 +1,132 @@
 {% extends "base.html" %}
-{% from "_macros.html" import ai_panel, level_badge %}
+{% from "_macros.html" import verdict, level_badge, copy_field, findings, observations, kv_table, raw_output, tip %}
 {% block title %}Report {{ r.id }}{% endblock %}
-{% macro kv_table(d, empty) %}
-  {% if d %}
-  <div class="table-wrap"><table class="mini">
-    <tbody>{% for k, v in d.items() %}<tr><th scope="row">{{ k }}</th><td>{{ v }}</td></tr>{% endfor %}</tbody>
-  </table></div>
-  {% else %}<p class="empty">{{ empty }}</p>{% endif %}
-{% endmacro %}
 {% block content %}
 {% set f = rep.file %}{% set md = rep.metadata %}{% set heur = rep.heuristics %}
-<h1>Detailed integrity report</h1>
-<p class="muted">{{ rep.assessment_type }}</p>
-
-<section class="panel" aria-labelledby="id-h">
-  <h2 id="id-h">1. Report and file identity</h2>
-  <dl class="kv">
-    <dt>Report ID</dt><dd><code>{{ rep.report_id }}</code></dd>
-    <dt>Generated</dt><dd>{{ rep.generated_at|when }} ({{ rep.application.name }} {{ rep.application.version }})</dd>
-    <dt>Original filename</dt><dd>{{ f.original_filename }}</dd>
-    <dt>Received</dt><dd>{{ f.received_at|when }}</dd>
-    <dt>SHA-256</dt><dd><code class="hash">{{ f.sha256 }}</code></dd>
-    <dt>MD5 (reference only)</dt><dd><code class="hash">{{ f.md5 }}</code></dd>
-    <dt>Size / format</dt><dd>{{ f.size_bytes|filesize }} · {{ f.detected_format }} ({{ f.mime_type }}) · extension .{{ f.extension }}
-      {% if not f.extension_matches_content %}<span class="badge band-moderate">extension mismatch</span>{% endif %}</dd>
-    <dt>Stored copy at upload</dt><dd>{{ 'Hash verified' if f.stored_copy_verified else 'MISMATCH' }}</dd>
-    <dt>Stored copy now</dt><dd>
-      {% if storage_check == 'verified' %}Re-hashed on opening this report: matches the recorded SHA-256.
-      {% elif storage_check == 'missing' %}<span class="badge band-elevated">stored file missing</span>
-      {% else %}<span class="badge band-elevated">stored file no longer matches recorded hash</span>{% endif %}</dd>
-  </dl>
-  <p class="actions">
-    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='txt') }}">Download TXT</a>
-    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='json') }}">Download JSON</a>
-    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='pdf') }}">Download PDF</a>
-  </p>
-</section>
-
-<section class="panel summary level-border-{{ rep.preliminary_assessment.level }}">
-  <h2>2. Preliminary assessment {{ level_badge(rep.preliminary_assessment.level) }}</h2>
-  <p>{{ rep.preliminary_assessment.text }}</p>
-</section>
-
-<div class="grid-2">
-  <section class="panel">
-    <h2>Evidence image</h2>
-    {% if previewable %}<img class="evidence" src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded evidence image">
-    {% else %}<p class="empty">Browsers cannot display {{ f.detected_format }}.</p>{% endif %}
-  </section>
-  {{ ai_panel(rep.ai_detection, rep.ai_model) }}
+<div class="page-head">
+  <div>
+    <h1>Integrity report</h1>
+    <p class="small"><code>{{ rep.report_id }}</code> · {{ f.original_filename }} · {{ f.received_at|when }}</p>
+  </div>
+  <div class="row" aria-label="Download report">
+    <a class="btn btn-primary" href="{{ url_for('download', record_id=r.id, fmt='pdf') }}">Download PDF</a>
+    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='txt') }}">TXT</a>
+    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='json') }}">JSON</a>
+  </div>
 </div>
 
-<section class="panel">
-  <h2>3. Heuristic findings — caution score {{ heur.caution_score }}/100 <span class="badge band-{{ heur.caution_band }}">{{ heur.caution_band }}</span></h2>
-  <p class="muted">Rule-weight sum (not a probability). Bands: low &lt; 15, moderate 15–39, elevated ≥ 40.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Weight</th><th>Finding</th><th>Explanation</th></tr></thead>
-    <tbody>{% for item in heur.findings %}
-      <tr><td>{{ '+%d'|format(item.weight) if item.weight else 'info' }}</td><td>{{ item.title }}</td><td>{{ item.detail }}</td></tr>
-    {% endfor %}</tbody>
-  </table></div>
-  {% if heur.ela and r.derived_filename %}
-  <h3>Error Level Analysis (visual aid, unscored)</h3>
-  <img class="evidence" src="{{ url_for('evidence_file', record_id=r.id, kind='ela') }}" alt="Error level analysis visualisation">
-  <p class="muted">Re-saved at JPEG quality {{ heur.ela.resave_quality }}; differences amplified ×{{ heur.ela.visualisation_scale }}.
-    Mean {{ heur.ela.mean_difference }}, max {{ heur.ela.max_difference }}. Edges and fine texture are naturally bright;
-    look for regions whose brightness differs from similar content elsewhere.</p>
+<section class="panel" id="integrity" aria-labelledby="integrity-h">
+  <div class="integrity-status">
+    <h2 id="integrity-h" class="h3">Report integrity</h2>
+    {% set st = {'match': ('is-ok', 'PDF matches recorded hash'), 'mismatch': ('is-bad', 'PDF does not match recorded hash'),
+                 'missing': ('is-bad', 'Stored PDF missing'), 'not_generated': ('', 'PDF not generated yet')}[pdf_status] %}
+    <span class="badge {{ st[0] }}">{{ st[1] }}</span>
+    {{ tip("Tamper-evident, not tamper-proof: a change to the stored PDF is detected as long as the recorded hash in the database is intact. This is not a legal chain of custody.", 'tip-integrity', 'About report integrity') }}
+  </div>
+  <div class="stack">
+    {% if pdf.pdf_sha256 %}
+      <div>{{ copy_field('SHA-256 of the generated PDF file', pdf.pdf_sha256, 'pdf-sha') }}
+        <p class="small muted gap-top">Recorded {{ pdf.pdf_generated_at|when }}. A file cannot contain its own hash, so it is recorded here and in the TXT/JSON exports.</p></div>
+    {% else %}
+      <p class="small muted">The PDF report has not been generated yet; it is generated and hashed on first download.</p>
+    {% endif %}
+    <div>{{ copy_field('SHA-256 of the original uploaded image', f.sha256, 'img-sha') }}
+      <p class="small muted gap-top">Stored copy:
+        {% if storage_check == 'verified' %}Re-hashed on opening this report: matches.
+        {% elif storage_check == 'missing' %}<strong>missing</strong>.
+        {% else %}<strong>no longer matches the recorded hash</strong>.{% endif %}</p></div>
+  </div>
+  {% if pdf.pdf_sha256 %}
+  <div class="verify-form">
+    <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm" type="submit">Re-check stored PDF</button>
+    </form>
+    <form method="post" action="{{ url_for('verify_report', record_id=r.id) }}" enctype="multipart/form-data" class="row">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="visually-hidden" for="report-file">PDF to check</label>
+      <input id="report-file" name="report_file" type="file" accept=".pdf,application/pdf" required>
+      <button class="btn btn-sm" type="submit">Check a PDF copy</button>
+    </form>
+  </div>
+  {% endif %}
+  {% if audit %}
+  <details class="gap-top">
+    <summary class="small">Audit trail ({{ audit|length }})</summary>
+    <div class="table-wrap gap-top"><table class="table-compact">
+      <thead><tr><th>Time (UTC)</th><th>Event</th><th>Outcome</th><th>File SHA-256</th></tr></thead>
+      <tbody>{% for a in audit %}
+        <tr><td>{{ a.created_at|when }}</td><td>{{ a.event_type.replace('report_', '') }}</td><td>{{ a.outcome }}</td>
+          <td class="hash">{{ (a.report_sha256 or '—')[:16] }}{% if a.report_sha256 %}…{% endif %}</td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+  </details>
   {% endif %}
 </section>
 
-<section class="panel">
-  <h2>4. Evidence consistency observations</h2>
-  <ul class="findings">
-  {% for o in rep.consistency.observations %}
-    <li class="obs-{{ o.kind }}"><strong>[{{ o.category }}] {{ o.title }}.</strong> {{ o.detail }}</li>
-  {% endfor %}
-  </ul>
-  <h3>Recommended next steps</h3>
-  <ol>{% for step in rep.consistency.recommended_checks %}<li>{{ step }}</li>{% endfor %}</ol>
+<section class="panel split" aria-label="Result">
+  <div class="media">
+    {% if previewable %}<img src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded image">
+    {% else %}<p class="muted small">Browsers cannot display {{ f.detected_format }}.</p>{% endif %}
+  </div>
+  <div>{{ verdict(rep.ai_detection) }}</div>
 </section>
 
-<section class="panel">
-  <h2>5. Metadata</h2>
-  <h3>Key fields</h3>{{ kv_table(md.key_fields, '') }}
-  <h3>Image properties</h3>{{ kv_table(md.image, '') }}
-  <h3>EXIF (IFD0) — {{ md.exif|length }} tags</h3>{{ kv_table(md.exif, 'No EXIF IFD0 tags. Missing metadata is common and is not evidence of manipulation.') }}
-  <h3>EXIF sub-IFD — {{ md.exif_sub_ifd|length }} tags</h3>{{ kv_table(md.exif_sub_ifd, 'No EXIF sub-IFD tags.') }}
-  <h3>GPS — {{ md.gps|length }} tags</h3>{{ kv_table(md.gps, 'No GPS tags.') }}
-  <h3>Embedded text chunks</h3>{{ kv_table(md.embedded_text, 'None.') }}
-  <h3>Metadata containers</h3>{{ kv_table(md.containers, '') }}
-  {% if md.errors %}<p class="alert alert-warn">Extraction errors: {{ md.errors|join('; ') }}</p>{% endif %}
-</section>
+<div class="accordion gap-top">
+  <details open>
+    <summary>Assessment <span class="meta">{{ level_badge(rep.preliminary_assessment.level) }}</span></summary>
+    <div class="body"><p>{{ rep.preliminary_assessment.text }}</p>
+      <p class="small muted">{{ rep.assessment_type }}</p></div>
+  </details>
+  <details>
+    <summary>AI model output <span class="meta">{{ rep.ai_detection.status }}</span></summary>
+    <div class="body">{{ raw_output(rep.ai_detection) }}
+      {% if rep.ai_detection.known_limitations or rep.ai_model.known_limitations %}
+      <ul class="list gap-top">{% for l in rep.ai_detection.known_limitations or rep.ai_model.known_limitations %}<li class="small">{{ l }}</li>{% endfor %}</ul>
+      {% endif %}</div>
+  </details>
+  <details>
+    <summary>Heuristic findings <span class="meta">caution score {{ heur.caution_score }}/100 · {{ heur.caution_band }}</span></summary>
+    <div class="body"><p class="small muted">Rule-weight sum, not a probability. Bands: low &lt; 15, moderate 15–39, elevated ≥ 40.</p>
+      {{ findings(heur.findings) }}
+      {% if heur.ela and r.derived_filename %}
+      <div class="ela gap-top"><h3 class="gap-bottom">Error Level Analysis</h3>
+        <img src="{{ url_for('evidence_file', record_id=r.id, kind='ela') }}" alt="Error level analysis of the uploaded image">
+        <p class="small muted gap-top">Visual aid only, not scored. Edges and texture are naturally bright.</p></div>
+      {% endif %}</div>
+  </details>
+  <details>
+    <summary>Consistency observations <span class="meta">{{ rep.consistency.observations|length }}</span></summary>
+    <div class="body">{{ observations(rep.consistency.observations) }}
+      <h3 class="gap-top gap-bottom">Recommended next steps</h3>
+      <ol class="small">{% for step in rep.consistency.recommended_checks %}<li>{{ step }}</li>{% endfor %}</ol></div>
+  </details>
+  <details>
+    <summary>Metadata <span class="meta">{{ md.exif_tag_count }} EXIF tags</span></summary>
+    <div class="body stack">
+      <div><h3 class="gap-bottom">Key fields</h3>{{ kv_table(md.key_fields, '', true) }}</div>
+      <div><h3 class="gap-bottom">Image</h3>{{ kv_table(md.image, '', true) }}</div>
+      <div><h3 class="gap-bottom">EXIF</h3>{{ kv_table(md.exif, 'No EXIF tags. Missing metadata is common and is not evidence of manipulation.') }}</div>
+      {% if md.exif_sub_ifd %}<div><h3 class="gap-bottom">EXIF sub-IFD</h3>{{ kv_table(md.exif_sub_ifd, '') }}</div>{% endif %}
+      {% if md.gps %}<div><h3 class="gap-bottom">GPS</h3>{{ kv_table(md.gps, '') }}</div>{% endif %}
+      {% if md.embedded_text %}<div><h3 class="gap-bottom">Embedded text</h3>{{ kv_table(md.embedded_text, '') }}</div>{% endif %}
+      <div><h3 class="gap-bottom">Containers</h3>{{ kv_table(md.containers, '') }}</div>
+      {% if md.errors %}<p class="alert alert-warn">Extraction errors: {{ md.errors|join('; ') }}</p>{% endif %}
+      <div><h3 class="gap-bottom">File</h3><dl class="kv"><dt>MD5 (reference)</dt><dd class="hash">{{ f.md5 }}</dd>
+        <dt>Extension</dt><dd>.{{ f.extension }}{% if not f.extension_matches_content %} (does not match content){% endif %}</dd></dl></div>
+    </div>
+  </details>
+  <details>
+    <summary>Limitations</summary>
+    <div class="body"><ul class="list">{% for l in rep.limitations %}<li class="small">{{ l }}</li>{% endfor %}</ul>
+      <p class="small muted gap-top">{{ rep.custody_note }}</p></div>
+  </details>
+</div>
 
-<section class="panel">
-  <h2>6. Limitations</h2>
-  <ul>{% for l in rep.limitations %}<li>{{ l }}</li>{% endfor %}</ul>
-  <h3>Custody note</h3>
-  <p>{{ rep.custody_note }}</p>
-</section>
-
-<section class="panel danger-zone">
-  <h2>Delete this record</h2>
-  <p>Permanently removes the database record, the stored evidence file and derived images.</p>
-  <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm="Delete report {{ r.id }} and its stored files? This cannot be undone.">
+<div class="row gap-top">
+  <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-danger">Delete record and files</button>
+    <button type="submit" class="btn btn-danger btn-sm">Delete record</button>
   </form>
-</section>
+</div>
 {% endblock %}

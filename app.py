@@ -7,10 +7,11 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from flask import (Flask, Response, abort, flash, jsonify, redirect, render_template, request,
-                   send_from_directory, session, url_for)
+                   send_file, send_from_directory, session, url_for)
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 
 import analyzer
+import report_store
 import reports
 from ai_detector import AIDetector, CONFIDENCE_NOTE, SCORE_NOTE
 from config import load_config
@@ -181,22 +182,54 @@ def _register_routes(app):
         record = record_or_404(record_id)
         return render_template("report.html", r=record, rep=record["report"],
                                storage_check=stored_copy_check(record),
+                               pdf=report_store.integrity_block(record, db=app.db),
+                               pdf_status=report_store.check(record, config=app.config, db=app.db)[0],
+                               audit=app.db.audit_for(record_id),
                                previewable=record["report"]["file"]["detected_format"] in BROWSER_PREVIEWABLE)
 
     @app.get("/report/<record_id>/download/<fmt>")
     def download(record_id, fmt):
         record = record_or_404(record_id)
-        rep = record["report"]
+        if fmt == "pdf":
+            # The same stored, hashed file is served every time, after its hash has been re-checked.
+            try:
+                path = report_store.open_for_download(record, config=app.config, db=app.db)
+            except report_store.ReportIntegrityError as exc:
+                return render_template("error.html", code=409, title="Report integrity check failed",
+                                       message=str(exc), back_url=url_for("report", record_id=record_id),
+                                       back_label="Back to report"), 409
+            return send_file(path, mimetype="application/pdf", as_attachment=True,
+                             download_name=f"{record_id}.pdf", max_age=0)
+        # TXT/JSON carry the recorded PDF hash; the PDF itself cannot contain its own hash.
+        rep = {**record["report"], "report_file_integrity": report_store.integrity_block(record, db=app.db)}
         if fmt == "json":
             body, mime = reports.to_json(rep).encode("utf-8"), "application/json"
         elif fmt == "txt":
             body, mime = reports.to_txt(rep).encode("utf-8"), "text/plain"
-        elif fmt == "pdf":
-            body, mime = reports.to_pdf(rep), "application/pdf"
         else:
             abort(404)
         return Response(body, mimetype=mime, headers={
             "Content-Disposition": f'attachment; filename="{record_id}.{fmt}"'})
+
+    @app.post("/report/<record_id>/verify")
+    def verify_report(record_id):
+        _check_csrf()
+        record = record_or_404(record_id)
+        upload = request.files.get("report_file")
+        if upload is not None and upload.filename:
+            result = report_store.verify_uploaded(record, upload.read(), upload.filename, db=app.db)
+        else:
+            result = report_store.verify_stored(record, config=app.config, db=app.db)
+        messages = {
+            "match": ("success", "matches the recorded hash."),
+            "mismatch": ("error", "does not match the recorded hash."),
+            "missing": ("error", "is missing, so it cannot match the recorded hash."),
+            "not_generated": ("error", "cannot be checked: no PDF has been generated for this report yet."),
+        }
+        category, text = messages[result["status"]]
+        detail = f" Computed SHA-256: {result['computed']}." if result.get("computed") else ""
+        flash(f"The {result['source']} {text}{detail}", category)
+        return redirect(url_for("report", record_id=record_id) + "#integrity")
 
     @app.get("/evidence/<record_id>/<kind>")
     def evidence_file(record_id, kind):

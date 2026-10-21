@@ -76,14 +76,29 @@ Optional – rebuild the labelled evaluation set (about 300 MB from Wikimedia Co
 
 | Page | URL | What it shows |
 |---|---|---|
-| Dashboard | `/` | Counts, AI model status (with retry if loading failed), recent analyses |
-| Upload evidence | `/upload` | File picker, client-side validation, preview, upload progress and analysis wait state |
-| Analysis results | `/analysis/<id>` | Preliminary assessment, AI scores with bars, caution score, key observations, downloads |
-| Detailed report | `/report/<id>` | Everything: identity, live stored-copy re-hash, AI raw output, findings, ELA, observations, full metadata, limitations, delete |
-| History | `/history` | All stored analyses, search by filename / SHA-256 / report ID, delete |
-| Methodology | `/methodology` | How each step works, rule weights, model details and limitations |
+| Dashboard | `/` | One primary action (upload), model status, totals, recent analyses or an empty state |
+| Upload | `/upload` | One dropzone (drag-and-drop or browse), formats and size limit on one line, preview, upload progress, then an "Analysing" state |
+| Results | `/analysis/<id>` | Verdict (Likely AI-generated / Likely real / Inconclusive) with both scores, model name and revision, "Not independently calibrated"; assessment badge and caution score; copyable SHA-256; tabs for Metadata, Heuristics, Consistency, Limitations |
+| Detailed report | `/report/<id>` | TXT / JSON / PDF downloads; report-integrity block (PDF SHA-256, original image SHA-256, re-check, check a PDF copy, audit trail); accordion with model output, findings, ELA, observations, metadata, limitations; delete |
+| History | `/history` | Searchable table (filename, SHA-256, report ID), delete with confirmation, empty state |
+| Methodology | `/methodology` | Short intro and a "How this works" accordion: steps, model, caution-score weights, report integrity, measured accuracy, limitations |
 
----
+### Interface design
+
+- One neutral palette with a single accent colour, light and dark themes (follows the system setting), a fixed type scale
+  (13/15/18/24/32 px) and spacing scale, visible keyboard focus, `prefers-reduced-motion` support, no gradients and no
+  decorative images. The only images shown are the user's upload and the app's own ELA output.
+- Layout and interaction patterns were taken from SynthID Detector (centred single-action upload flow, image beside the
+  result) and Illuminarty (one headline result, short explanations per detector). No logos, wording or assets were copied.
+- Components (dropzone, stepper/progress, badges, tabs, accordion, toast, empty state, confirmation dialog, tooltip) follow
+  common patterns browsed on 21st.dev, but **no code was copied from 21st.dev**: the component pages viewed (e.g. "File Upload"
+  by extend-hq) did not state a license and are React/Tailwind, so everything was written from scratch in plain CSS
+  (`static/style.css`) and JavaScript (`static/app.js`) with no build step or new dependency.
+- Accessibility: labelled controls, WAI-ARIA tabs with arrow-key navigation, `role="progressbar"` with `aria-valuenow` during
+  upload and `aria-busy` while analysing, `role="alert"` for errors, `aria-live` toast, native `<dialog>` for delete
+  confirmation, tooltips reachable by keyboard.
+- The upload progress bar shows the real upload percentage; the analysis step is shown as indeterminate because the
+  server analyses in one request and does not report progress.
 
 ## AI model
 
@@ -255,6 +270,7 @@ metadata.py       Image properties, EXIF/GPS, text chunks, container markers
 heuristics.py     Rule-based findings, caution score, JPEG quality estimate, Error Level Analysis
 consistency.py    Cross-checking rules, observations, recommended checks, qualitative summary
 reports.py        Report structure, TXT / JSON / PDF (PDF is written directly, no extra library)
+report_store.py   Tamper-evident PDF storage: generate once, hash the stored file, check before download, verify, audit
 database.py       SQLite schema and parameterised queries
 config.py         Settings and environment overrides
 download_model.py Pre-download and smoke-test the model
@@ -264,12 +280,36 @@ evaluation/       candidates.py (reviewed models, pinned), compare_models.py (se
 tests/eval_data/  labels.csv (sources, licenses, splits, checksums) and build_eval_set.py; images/ is git-ignored
 templates/        Jinja2 pages;  static/  CSS and JS (no external CDNs)
 tests/            pytest suite
-instance/         Runtime data (created automatically, git-ignored): evidence.db, uploads/, derived/, app.log, secret_key
+instance/         Runtime data (created automatically, git-ignored): evidence.db, uploads/, derived/, reports/, app.log, secret_key
 ```
 
-SQLite table `analyses` stores: report ID, original filename, stored filename, upload timestamp, SHA-256, size, MIME type,
-AI status, AI label, AI-generated score, real-image score, prediction label, model ID and revision, caution score,
-summary level, and the full metadata / analysis / report as JSON.
+SQLite tables:
+
+- `analyses`: report ID, original filename, stored filename, upload timestamp, SHA-256, size, MIME type, AI status, AI label,
+  AI-generated score, real-image score, prediction label, model ID and revision, caution score, summary level, and the full
+  metadata / analysis / report as JSON.
+- `report_files`: the one stored PDF per analysis: stored filename, SHA-256 of the PDF file, SHA-256 of the original image,
+  creation time (UTC), app version.
+- `audit_log`: audit id, report id, event type (`report_generated`, `report_downloaded`, `report_verified`), file type (PDF),
+  report SHA-256, original file SHA-256, outcome (`ok`, `refused`, `match`, `mismatch`, `missing`), detail, timestamp (UTC),
+  app version, and `record_deleted` / `record_deleted_at` (rows are kept and marked when an analysis is deleted).
+
+## Report integrity (tamper-evident PDF)
+
+1. When an analysis is saved, the PDF report is generated **once**, written to `instance/reports/<report-id>.pdf`, and its
+   SHA-256 is computed from the stored file bytes. That hash and the original image's SHA-256 are recorded in
+   `report_files` and in a `report_generated` audit row. Records created before this feature get their PDF on first download.
+2. Every PDF download re-hashes the stored file first. If it matches, the **same stored file** is served (it is never
+   regenerated) and a `report_downloaded` row is written. If it does not match, or the file is missing, the download is
+   refused with an integrity-failure page and a `refused` audit row is written.
+3. The report page shows the PDF's SHA-256 (a file cannot contain its own hash) and lets the user re-check the stored PDF or
+   upload a PDF copy; the app says whether it *matches* or *does not match* the recorded hash and logs a `report_verified` row.
+   The TXT and JSON exports include the PDF hash in a "PDF report file integrity" section.
+4. Deleting an analysis deletes its stored PDF and `report_files` row and marks its audit rows `record_deleted`.
+
+**Limitation:** this is *tamper-evident*, not tamper-proof. A changed PDF is detected only while the recorded hash in the
+database is intact; someone who can edit both the file and the database can defeat it. It does not establish legal chain
+of custody.
 
 ## Security measures
 
@@ -287,7 +327,7 @@ summary level, and the full metadata / analysis / report as JSON.
 
 ## Test results
 
-`pytest -v` on Windows 11, Python 3.14.7, torch 2.14.1+cpu, transformers 5.20.2, 2026-10-21: **31 passed, 0 skipped**
+`pytest -v` on Windows 11, Python 3.14.7, torch 2.14.1+cpu, transformers 5.20.2, 2026-10-21: **37 passed, 0 skipped**
 (the real-model tests and the evaluation-set test ran; they are skipped with a message only if the model or the
 evaluation images are missing).
 
@@ -304,6 +344,12 @@ evaluation images are missing).
 | Model-unavailable fallback (no fake scores, metadata still works, "AI analysis unavailable" in page and TXT) | `test_model_unavailable_fallback` |
 | TXT / JSON / PDF downloads (PDF structure checked) | `test_report_downloads` |
 | Records saved by v1.0 (previous model, old score format) still open and download | `test_old_v1_0_records_still_open` |
+| PDF hash computed from the stored file and identical across repeated downloads; shown on the page and in TXT/JSON | `test_report_integrity.py::test_pdf_hash_from_stored_file_and_stable_across_downloads` |
+| Audit rows written with both the PDF hash and the original image hash | `test_audit_rows_record_both_hashes` |
+| One changed byte in the stored PDF: download refused (HTTP 409), verification reports a mismatch, uploaded copies checked | `test_one_changed_byte_blocks_download_and_fails_verification` |
+| Missing stored PDF refused | `test_missing_pdf_is_refused` |
+| Delete removes the PDF and marks the audit rows; app keeps working | `test_delete_removes_pdf_and_marks_audit` |
+| Record without a PDF row opens and gets its PDF on first download | `test_record_without_pdf_still_opens_and_generates_on_download` |
 | Persistence across restart, reopening an earlier report, search | `test_history_persists_across_restart` |
 | Delete report and its stored + derived files | `test_delete_removes_record_and_files` |
 | CSRF, path traversal / bad IDs, security headers | `test_csrf_required`, `test_bad_ids_and_pages` |
@@ -315,18 +361,22 @@ history still present after restarting the server, phone-width layout.
 
 ## Demonstration workflow
 
-1. Run `run_windows.bat`; the dashboard shows "AI model ready" after loading (takes a few seconds from cache).
-2. **Upload** `samples\camera_exif.jpg` → classifier *Likely real*; Photoshop tag (+15) and capture/modify time gap
-   (+10) give caution score 25, so the assessment is *Further review recommended*. Open the detailed report to show the
-   ELA image and the "Stored copy now: re-hashed" line.
+1. Run `run_windows.bat`; the dashboard shows "Model ready" after loading (takes a few seconds from cache).
+2. **Upload** `samples\camera_exif.jpg` (drag it onto the dropzone) → classifier *Likely real*; Photoshop tag (+15) and
+   capture/modify time gap (+10) give caution score 25, so the assessment is *Review recommended*. Use the tabs, copy the
+   SHA-256, then open **Full report** to show the integrity block, the ELA image (Heuristic findings) and the
+   "Re-hashed on opening this report" line.
 3. Upload `samples\generator_tags.png` → generator signature in the PNG `parameters` chunk (+40) and generator-typical
    1024×1024 size (+5): caution score 50 (elevated). The classifier says *Likely real*, so the report shows
    *Conflicting evidence* and explains that detectors miss generators – the classifier never overrides the metadata clue.
 4. Upload `samples\no_metadata.png` → shows that missing EXIF is explained as common, not as manipulation.
 5. Upload `samples\renamed_png.jpg` → extension mismatch finding. Upload `samples\not_an_image.jpg` → rejected with a clear message.
 6. Upload `camera_exif.jpg` again → "Identical file analysed before" (same SHA-256).
-7. Download TXT / JSON / PDF. Open **History**, restart the server, show the records are still there; delete one.
-8. Optional: stop the server, start it with `set DEI_MODEL_ID=not/a-model` (or with no internet and an empty cache),
+7. Download TXT / JSON / PDF. On the report page click **Re-check stored PDF** ("matches the recorded hash"), then upload
+   the downloaded PDF with **Check a PDF copy**. Open the audit trail. Optional: change one byte of the file in
+   `instance\reports\` and show that the download is refused.
+8. Open **History**, restart the server, show the records are still there; delete one (confirmation dialog).
+9. Optional: stop the server, start it with `set DEI_MODEL_ID=not/a-model` (or with no internet and an empty cache),
    upload an image and show "AI analysis unavailable" with no scores.
 
 ## Limitations
@@ -340,6 +390,8 @@ history still present after restarting the server, phone-width layout.
 - The AI model is licensed CC BY-NC 4.0 (non-commercial use only).
 - Metadata can be stripped, copied or forged; heuristics are clues only.
 - ELA requires expert interpretation and is not scored. C2PA manifests are only detected, not validated.
+- **Report hashes are tamper-evident, not tamper-proof:** they detect changes to a stored PDF only while the recorded hash
+  in the database is intact, and do not protect against someone who can also edit the database.
 - **Chain of custody:** hashing starts when this application receives the file. It does not establish the file's
   history before upload, and the app does not provide legally compliant chain-of-custody records.
 - Single-user local demo: no authentication, no multi-user access control.

@@ -1,7 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Error {{ code }}{% endblock %}
+{% block title %}{{ title or ('Not found' if code == 404 else 'Error') }}{% endblock %}
 {% block content %}
-<h1>{{ 'Not found' if code == 404 else 'Something went wrong' }}</h1>
-<p class="alert alert-error" role="alert">{{ message }}</p>
-<p><a class="btn" href="{{ url_for('index') }}">Back to dashboard</a> <a class="btn" href="{{ url_for('upload') }}">Upload evidence</a></p>
+<div class="narrow center panel empty">
+  <strong>{{ title or ('Not found' if code == 404 else 'Something went wrong') }}</strong>
+  <p role="alert">{{ message }}</p>
+  <div class="row center-row">
+    {% if back_url %}<a class="btn btn-primary" href="{{ back_url }}">{{ back_label }}</a>
+    {% else %}<a class="btn" href="{{ url_for('index') }}">Dashboard</a><a class="btn btn-primary" href="{{ url_for('upload') }}">Upload</a>{% endif %}
+  </div>
+</div>
 {% endblock %}

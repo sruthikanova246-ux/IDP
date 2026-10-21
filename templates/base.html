@@ -3,19 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{% endblock %} · Digital Evidence Integrity System</title>
+  <title>{% block title %}{% endblock %} · Evidence Integrity</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="topbar">
   <div class="wrap topbar-inner">
-    <a class="brand" href="{{ url_for('index') }}">Digital Evidence Integrity System</a>
-    <nav aria-label="Main">
+    <a class="brand" href="{{ url_for('index') }}">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      Evidence Integrity
+    </a>
+    <nav class="nav" aria-label="Main">
       {% set ep = request.endpoint %}
       <a href="{{ url_for('index') }}" {% if ep == 'index' %}aria-current="page"{% endif %}>Dashboard</a>
       <a href="{{ url_for('upload') }}" {% if ep == 'upload' %}aria-current="page"{% endif %}>Upload</a>
-      <a href="{{ url_for('history') }}" {% if ep == 'history' %}aria-current="page"{% endif %}>History</a>
+      <a href="{{ url_for('history') }}" {% if ep in ('history', 'report', 'analysis') %}aria-current="page"{% endif %}>History</a>
       <a href="{{ url_for('methodology') }}" {% if ep == 'methodology' %}aria-current="page"{% endif %}>Methodology</a>
     </nav>
   </div>
@@ -28,10 +31,18 @@
   {% endwith %}
   {% block content %}{% endblock %}
 </main>
-<footer class="wrap footer">
-  Preliminary automated assessment only. Results do not verify authenticity.
-  <a href="{{ url_for('methodology') }}">Methodology &amp; limitations</a>
+<footer class="footer wrap">
+  Preliminary automated assessment. It does not verify authenticity. <a href="{{ url_for('methodology') }}">How this works</a>
 </footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <h2 id="confirm-title">Delete this record?</h2>
+  <p id="confirm-text" class="muted">The analysis, the stored image, derived images and the stored PDF report are removed. This cannot be undone.</p>
+  <div class="row">
+    <button type="button" class="btn" data-dialog-cancel>Cancel</button>
+    <button type="button" class="btn btn-danger" data-dialog-ok>Delete</button>
+  </div>
+</dialog>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

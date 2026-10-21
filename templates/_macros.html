@@ -1,71 +1,99 @@
+{% macro tip(text, id, label='More information') -%}
+  <span class="tip"><button type="button" class="tip-btn" aria-label="{{ label }}" aria-describedby="{{ id }}">i</button><span class="tip-text" role="tooltip" id="{{ id }}">{{ text }}</span></span>
+{%- endmacro %}
+
 {% macro model_badge(s) -%}
-  {%- set labels = {'ready': 'AI model ready', 'loading': 'AI model loading…', 'not_loaded': 'AI model not loaded yet',
-                    'failed': 'AI model unavailable', 'disabled': 'AI detection disabled'} -%}
-  <span class="badge badge-{{ s.state }}" data-model-badge>{{ labels.get(s.state, s.state) }}</span>
+  {%- set labels = {'ready': 'Model ready', 'loading': 'Model loading…', 'not_loaded': 'Model not loaded yet',
+                    'failed': 'Model unavailable', 'disabled': 'AI detection off'} -%}
+  {%- set tone = {'ready': 'is-ok', 'loading': 'is-warn', 'not_loaded': 'is-warn', 'failed': 'is-bad', 'disabled': ''} -%}
+  <span class="badge {{ tone.get(s.state, '') }}" data-model-badge>{{ labels.get(s.state, s.state) }}</span>
 {%- endmacro %}
 
 {% macro level_badge(level) -%}
-  {%- set labels = {'review': 'Further review recommended', 'conflicting': 'Conflicting evidence',
-                    'no_strong_indicators': 'No strong indicators', 'limited': 'Limited (no AI result)',
+  {%- set labels = {'review': 'Review recommended', 'conflicting': 'Conflicting evidence',
+                    'no_strong_indicators': 'No strong indicators', 'limited': 'No AI result',
                     'inconclusive': 'Classifier inconclusive'} -%}
-  <span class="badge level-{{ level }}">{{ labels.get(level, level) }}</span>
+  {%- set tone = {'review': 'is-warn', 'conflicting': 'is-bad', 'no_strong_indicators': 'is-ok', 'limited': '', 'inconclusive': 'is-warn'} -%}
+  <span class="badge {{ tone.get(level, '') }}">{{ labels.get(level, level) }}</span>
 {%- endmacro %}
 
-{% macro score_bar(label, value, kind) -%}
+{% macro score_bar(label, value, neutral=false) -%}
   <div class="score">
     <div class="score-head"><span>{{ label }}</span><strong>{{ value|pct }}</strong></div>
-    {% if value is not none %}
     <div class="bar" role="progressbar" aria-label="{{ label }}" aria-valuemin="0" aria-valuemax="100"
-         aria-valuenow="{{ '%.1f'|format(value * 100) }}">
-      <div class="bar-fill bar-{{ kind }}" data-width="{{ '%.2f'|format(value * 100) }}"></div>
+         aria-valuenow="{{ '%.1f'|format(value * 100) }}" aria-valuetext="{{ value|pct }}">
+      <div class="bar-fill{% if neutral %} is-neutral{% endif %}" data-width="{{ '%.2f'|format(value * 100) }}"></div>
     </div>
-    {% endif %}
   </div>
 {%- endmacro %}
 
-{% macro ai_panel(ai, model) %}
-<section class="panel" aria-labelledby="ai-h">
-  <h2 id="ai-h">AI-generated image detection</h2>
-  {% if ai.status == 'ok' %}
-    <p class="prediction">Prediction: <strong>{{ ai.prediction_label }}</strong></p>
-    {% if ai.ai_score is not none %}
-      {{ score_bar('AI-generated score', ai.ai_score, 'ai') }}
-      {% if ai.real_score is not none %}{{ score_bar('Real-image score', ai.real_score, 'real') }}{% endif %}
-    {% else %}
-      <p class="alert alert-warn">{{ ai.message }}</p>
-    {% endif %}
-    <dl class="kv">
-      <dt>Model confidence</dt><dd>{{ ai.confidence_note }}</dd>
-      <dt>Decision rule</dt><dd>{{ ai.decision_rule }}</dd>
-      <dt>Model</dt><dd><code>{{ ai.model_id }}</code> ({{ ai.architecture }})</dd>
-      <dt>Revision</dt><dd><code>{{ ai.commit_hash or ai.revision }}</code></dd>
-      <dt>Raw output</dt>
-      <dd>
-        <table class="mini">
-          <thead><tr><th>Output</th><th>Label</th><th>Logit</th><th>Score</th></tr></thead>
-          <tbody>
-          {% for s in ai.scores %}
-            <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td>{{ '%.4f'|format(s.logit) }}</td><td>{{ '%.6f'|format(s.score if s.score is defined else s.softmax) }}</td></tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </dd>
-      <dt>Inference</dt><dd>{{ ai.inference_ms }} ms on CPU; model input {{ ai.model_input_size }}</dd>
-    </dl>
-    <div class="note">
-      <strong>How to read these scores.</strong> The AI-generated and real-image scores come from one model output and
-      always sum to 100%; they are not two independent measurements.{% if ai.output_mapping %} {{ ai.output_mapping }}{% endif %} {{ ai.score_note }} Model errors are possible in both directions.
-    </div>
+{% macro copy_field(label, value, id) -%}
+  <label class="field-label" for="{{ id }}">{{ label }}</label>
+  <div class="copy">
+    <input id="{{ id }}" type="text" value="{{ value }}" readonly spellcheck="false">
+    <button type="button" data-copy="{{ id }}">Copy</button>
+  </div>
+{%- endmacro %}
+
+{# The AI verdict: model output only. Never combined with the heuristic caution score. #}
+{% macro verdict(ai) %}
+  <div class="verdict-label">AI-generated image detection</div>
+  {% if ai.status == 'ok' and ai.ai_score is not none %}
+    <div class="verdict">{{ ai.prediction_label }}</div>
+    {{ score_bar('AI-generated score', ai.ai_score) }}
+    {% if ai.real_score is not none %}{{ score_bar('Real-image score', ai.real_score, neutral=true) }}{% endif %}
+    <p class="small muted">Not independently calibrated
+      {{ tip(ai.confidence_note ~ ' ' ~ ai.decision_rule, 'tip-scores', 'About these scores') }}</p>
+    <div class="model-line"><code>{{ ai.model_id }}</code> · revision <code>{{ (ai.commit_hash or ai.revision or '')[:10] }}</code></div>
+  {% elif ai.status == 'ok' %}
+    <div class="verdict">{{ ai.prediction_label }}</div>
+    <p class="unavailable">{{ ai.message }}</p>
   {% else %}
-    <p class="alert alert-warn" role="status"><strong>AI analysis unavailable.</strong>
-      No AI prediction was produced for this image (status: {{ ai.status }}). {{ ai.message }}</p>
-    <p>Metadata, hashing and heuristic checks below were still performed.</p>
+    <div class="verdict">AI analysis unavailable</div>
+    <p class="unavailable" role="status">No AI prediction was produced ({{ ai.status }}). {{ ai.message }}
+      Metadata, hashing and heuristic checks still ran.</p>
   {% endif %}
-  {% if model and model.known_limitations %}
-  <details>
-    <summary>Known model limitations</summary>
-    <ul>{% for l in model.known_limitations %}<li>{{ l }}</li>{% endfor %}</ul>
-  </details>
+{% endmacro %}
+
+{% macro raw_output(ai) %}
+  {% if ai.status == 'ok' %}
+  <div class="table-wrap"><table class="table-compact">
+    <thead><tr><th>Output</th><th>Label</th><th>Logit</th><th>Score</th></tr></thead>
+    <tbody>
+    {% for s in ai.scores %}
+      <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td class="num">{{ '%.4f'|format(s.logit) }}</td>
+        <td class="num">{{ '%.6f'|format(s.score if s.score is defined else s.softmax) }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <p class="small muted gap-top">{{ ai.output_mapping or '' }} Inference {{ ai.inference_ms }} ms on CPU; model input {{ ai.model_input_size }}.</p>
   {% endif %}
-</section>
+{% endmacro %}
+
+{% macro findings(items) %}
+  <ul class="list">
+  {% for item in items %}
+    <li><div class="title">{% if item.weight %}<span class="badge is-warn">+{{ item.weight }}</span>{% endif %}{{ item.title }}</div>
+      <div class="detail">{{ item.detail }}</div></li>
+  {% else %}
+    <li class="muted">Nothing recorded.</li>
+  {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro observations(items) %}
+  <ul class="list">
+  {% for o in items %}
+    <li><div class="title">{% if o.kind == 'caution' %}<span class="badge is-warn">caution</span>{% endif %}{{ o.title }}</div>
+      <div class="detail">{{ o.detail }}</div></li>
+  {% else %}
+    <li class="muted">No observations.</li>
+  {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% macro kv_table(d, empty, humanize=false) %}
+  {% if d %}
+  <dl class="kv">{% for k, v in d.items() %}<dt>{{ k.replace('_', ' ')|capitalize if humanize else k }}</dt><dd>{{ v if v is not none else '—' }}</dd>{% endfor %}</dl>
+  {% else %}<p class="muted small">{{ empty }}</p>{% endif %}
 {% endmacro %}
