@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Methodology and limitations{% endblock %}
+{% block content %}
+<h1>Methodology and limitations</h1>
+<p class="lead">Every upload goes through the same six steps. Each step reports what it found and how reliable it is;
+no step is allowed to fill in for another when it fails.</p>
+
+<section class="panel">
+  <h2>1. Validation and storage</h2>
+  <p>The extension must be an allowed image type, the file must be within the size limit, and Pillow must be able to
+  fully decode it (a decompression-bomb pixel limit applies). Accepted files are saved under a random internal name
+  derived from the report ID. Uploaded content is never executed.</p>
+</section>
+
+<section class="panel">
+  <h2>2. SHA-256 fingerprint</h2>
+  <p>The SHA-256 hash is computed over the exact bytes received, before any processing. The stored copy is re-hashed
+  after writing and again whenever the detailed report is opened. Identical hashes across reports mean byte-identical files.</p>
+  <p><strong>Custody note.</strong> {{ custody_note }}</p>
+</section>
+
+<section class="panel">
+  <h2>3. Metadata extraction</h2>
+  <p>Image properties, EXIF (IFD0, Exif sub-IFD, GPS), PNG/WEBP text chunks, ICC profile and the presence of XMP, IPTC
+  and C2PA markers are read. Missing metadata is reported as missing information, not as evidence of manipulation.</p>
+</section>
+
+<section class="panel">
+  <h2>4. AI-generated-image classifier</h2>
+  <p>Model: <code>{{ model_status.model_id }}</code> at revision <code>{{ model_status.revision }}</code>
+  (SigLIP image classifier, Apache-2.0, labels <code>ai</code> and <code>hum</code>). It is loaded once per server process.
+  The image has EXIF orientation applied, transparency flattened onto white, and is resized to 224×224 by the model's own
+  preprocessor.</p>
+  <ul>
+    <li><strong>AI-generated score / Real-image score:</strong> the softmax outputs for the two classes. They always sum to 100%
+      and are two views of one output, not independent measurements.</li>
+    <li><strong>Prediction:</strong> {{ decision_rule }}</li>
+    <li><strong>Model confidence:</strong> {{ confidence_note }}</li>
+    <li>{{ score_note }}</li>
+  </ul>
+  <p>If the libraries, weights or network are unavailable, or inference fails, the report says
+  <em>AI analysis unavailable</em> and no score is recorded. Heuristics are never substituted for the model.</p>
+  <h3>Known model limitations</h3>
+  <ul>{% for l in model_status.known_limitations %}<li>{{ l }}</li>{% endfor %}</ul>
+</section>
+
+<section class="panel">
+  <h2>5. Heuristic findings and caution score</h2>
+  <p>Rule-based clues from metadata and file structure. The caution score is the sum of the weights below (capped at 100).
+  It is not a probability and is shown separately from the AI score.</p>
+  <table class="mini">
+    <thead><tr><th>Rule</th><th>Weight</th></tr></thead>
+    <tbody>{% for k, v in weights.items() %}<tr><td>{{ k.replace('_', ' ') }}</td><td>+{{ v }}</td></tr>{% endfor %}</tbody>
+  </table>
+  <p>Error Level Analysis (JPEG only) is generated as a visual aid and is deliberately not scored.</p>
+</section>
+
+<section class="panel">
+  <h2>6. Evidence consistency analysis</h2>
+  <p>Readable rules compare the classifier result with metadata (camera tags, generator signatures, editing software,
+  timestamps), file properties and file identity. Agreements and conflicts are both reported, with follow-up checks.
+  The preliminary assessment is a qualitative label (e.g. "Further review recommended"), never an authenticity probability.</p>
+</section>
+
+<section class="panel">
+  <h2>Limitations</h2>
+  <ul>{% for l in limitations %}<li>{{ l }}</li>{% endfor %}</ul>
+</section>
+{% endblock %}

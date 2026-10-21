@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block content %}
+<h1>{{ 'Not found' if code == 404 else 'Something went wrong' }}</h1>
+<p class="alert alert-error" role="alert">{{ message }}</p>
+<p><a class="btn" href="{{ url_for('index') }}">Back to dashboard</a> <a class="btn" href="{{ url_for('upload') }}">Upload evidence</a></p>
+{% endblock %}

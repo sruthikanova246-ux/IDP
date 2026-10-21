@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import model_badge %}
+{% block title %}Upload evidence{% endblock %}
+{% block content %}
+<h1>Upload evidence</h1>
+<p class="lead">Allowed formats: {{ allowed|join(', ') }}. Maximum size {{ max_mb }} MB.
+The file is hashed as soon as the server receives it and is stored under a random internal name.</p>
+<p>{{ model_badge(model_status) }}
+  {% if model_status.state != 'ready' and model_status.state != 'disabled' %}
+  <span class="muted">If the model is not ready, the analysis waits for it to load or reports it as unavailable.</span>
+  {% endif %}
+</p>
+
+<form id="upload-form" class="panel" method="post" action="{{ url_for('upload_post') }}" enctype="multipart/form-data"
+      data-max-bytes="{{ max_mb * 1024 * 1024 }}" data-allowed="{{ allowed|join(',') }}" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label for="evidence" class="label">Image file</label>
+  <input id="evidence" name="evidence" type="file" required
+         accept="{% for e in allowed %}.{{ e }}{% if not loop.last %},{% endif %}{% endfor %}"
+         aria-describedby="file-help file-error">
+  <p id="file-help" class="muted">Choose one image. Nothing in the file is executed.</p>
+  <p id="file-error" class="field-error" role="alert" hidden></p>
+
+  <div id="preview" class="preview" hidden>
+    <img id="preview-img" alt="Preview of the selected image">
+    <p id="preview-meta" class="muted"></p>
+  </div>
+
+  <button id="submit-btn" class="btn btn-primary" type="submit">Analyse image</button>
+
+  <div id="progress" class="progress-block" hidden aria-live="polite">
+    <div class="bar"><div id="progress-fill" class="bar-fill bar-neutral"></div></div>
+    <p id="progress-text">Uploading…</p>
+  </div>
+</form>
+{% endblock %}

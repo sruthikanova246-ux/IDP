@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% from "_macros.html" import ai_panel, level_badge %}
+{% block title %}Report {{ r.id }}{% endblock %}
+{% macro kv_table(d, empty) %}
+  {% if d %}
+  <div class="table-wrap"><table class="mini">
+    <tbody>{% for k, v in d.items() %}<tr><th scope="row">{{ k }}</th><td>{{ v }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">{{ empty }}</p>{% endif %}
+{% endmacro %}
+{% block content %}
+{% set f = rep.file %}{% set md = rep.metadata %}{% set heur = rep.heuristics %}
+<h1>Detailed integrity report</h1>
+<p class="muted">{{ rep.assessment_type }}</p>
+
+<section class="panel" aria-labelledby="id-h">
+  <h2 id="id-h">1. Report and file identity</h2>
+  <dl class="kv">
+    <dt>Report ID</dt><dd><code>{{ rep.report_id }}</code></dd>
+    <dt>Generated</dt><dd>{{ rep.generated_at|when }} ({{ rep.application.name }} {{ rep.application.version }})</dd>
+    <dt>Original filename</dt><dd>{{ f.original_filename }}</dd>
+    <dt>Received</dt><dd>{{ f.received_at|when }}</dd>
+    <dt>SHA-256</dt><dd><code class="hash">{{ f.sha256 }}</code></dd>
+    <dt>MD5 (reference only)</dt><dd><code class="hash">{{ f.md5 }}</code></dd>
+    <dt>Size / format</dt><dd>{{ f.size_bytes|filesize }} · {{ f.detected_format }} ({{ f.mime_type }}) · extension .{{ f.extension }}
+      {% if not f.extension_matches_content %}<span class="badge band-moderate">extension mismatch</span>{% endif %}</dd>
+    <dt>Stored copy at upload</dt><dd>{{ 'Hash verified' if f.stored_copy_verified else 'MISMATCH' }}</dd>
+    <dt>Stored copy now</dt><dd>
+      {% if storage_check == 'verified' %}Re-hashed on opening this report: matches the recorded SHA-256.
+      {% elif storage_check == 'missing' %}<span class="badge band-elevated">stored file missing</span>
+      {% else %}<span class="badge band-elevated">stored file no longer matches recorded hash</span>{% endif %}</dd>
+  </dl>
+  <p class="actions">
+    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='txt') }}">Download TXT</a>
+    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='json') }}">Download JSON</a>
+    <a class="btn" href="{{ url_for('download', record_id=r.id, fmt='pdf') }}">Download PDF</a>
+  </p>
+</section>
+
+<section class="panel summary level-border-{{ rep.preliminary_assessment.level }}">
+  <h2>2. Preliminary assessment {{ level_badge(rep.preliminary_assessment.level) }}</h2>
+  <p>{{ rep.preliminary_assessment.text }}</p>
+</section>
+
+<div class="grid-2">
+  <section class="panel">
+    <h2>Evidence image</h2>
+    {% if previewable %}<img class="evidence" src="{{ url_for('evidence_file', record_id=r.id, kind='image') }}" alt="Uploaded evidence image">
+    {% else %}<p class="empty">Browsers cannot display {{ f.detected_format }}.</p>{% endif %}
+  </section>
+  {{ ai_panel(rep.ai_detection, rep.ai_model) }}
+</div>
+
+<section class="panel">
+  <h2>3. Heuristic findings — caution score {{ heur.caution_score }}/100 <span class="badge band-{{ heur.caution_band }}">{{ heur.caution_band }}</span></h2>
+  <p class="muted">Rule-weight sum (not a probability). Bands: low &lt; 15, moderate 15–39, elevated ≥ 40.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Weight</th><th>Finding</th><th>Explanation</th></tr></thead>
+    <tbody>{% for item in heur.findings %}
+      <tr><td>{{ '+%d'|format(item.weight) if item.weight else 'info' }}</td><td>{{ item.title }}</td><td>{{ item.detail }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% if heur.ela and r.derived_filename %}
+  <h3>Error Level Analysis (visual aid, unscored)</h3>
+  <img class="evidence" src="{{ url_for('evidence_file', record_id=r.id, kind='ela') }}" alt="Error level analysis visualisation">
+  <p class="muted">Re-saved at JPEG quality {{ heur.ela.resave_quality }}; differences amplified ×{{ heur.ela.visualisation_scale }}.
+    Mean {{ heur.ela.mean_difference }}, max {{ heur.ela.max_difference }}. Edges and fine texture are naturally bright;
+    look for regions whose brightness differs from similar content elsewhere.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>4. Evidence consistency observations</h2>
+  <ul class="findings">
+  {% for o in rep.consistency.observations %}
+    <li class="obs-{{ o.kind }}"><strong>[{{ o.category }}] {{ o.title }}.</strong> {{ o.detail }}</li>
+  {% endfor %}
+  </ul>
+  <h3>Recommended next steps</h3>
+  <ol>{% for step in rep.consistency.recommended_checks %}<li>{{ step }}</li>{% endfor %}</ol>
+</section>
+
+<section class="panel">
+  <h2>5. Metadata</h2>
+  <h3>Key fields</h3>{{ kv_table(md.key_fields, '') }}
+  <h3>Image properties</h3>{{ kv_table(md.image, '') }}
+  <h3>EXIF (IFD0) — {{ md.exif|length }} tags</h3>{{ kv_table(md.exif, 'No EXIF IFD0 tags. Missing metadata is common and is not evidence of manipulation.') }}
+  <h3>EXIF sub-IFD — {{ md.exif_sub_ifd|length }} tags</h3>{{ kv_table(md.exif_sub_ifd, 'No EXIF sub-IFD tags.') }}
+  <h3>GPS — {{ md.gps|length }} tags</h3>{{ kv_table(md.gps, 'No GPS tags.') }}
+  <h3>Embedded text chunks</h3>{{ kv_table(md.embedded_text, 'None.') }}
+  <h3>Metadata containers</h3>{{ kv_table(md.containers, '') }}
+  {% if md.errors %}<p class="alert alert-warn">Extraction errors: {{ md.errors|join('; ') }}</p>{% endif %}
+</section>
+
+<section class="panel">
+  <h2>6. Limitations</h2>
+  <ul>{% for l in rep.limitations %}<li>{{ l }}</li>{% endfor %}</ul>
+  <h3>Custody note</h3>
+  <p>{{ rep.custody_note }}</p>
+</section>
+
+<section class="panel danger-zone">
+  <h2>Delete this record</h2>
+  <p>Permanently removes the database record, the stored evidence file and derived images.</p>
+  <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm="Delete report {{ r.id }} and its stored files? This cannot be undone.">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-danger">Delete record and files</button>
+  </form>
+</section>
+{% endblock %}

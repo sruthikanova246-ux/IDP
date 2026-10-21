@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import level_badge %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>Analysis history</h1>
+<form class="search" method="get" action="{{ url_for('history') }}" role="search">
+  <label for="q" class="visually-hidden">Search by filename, SHA-256 or report ID</label>
+  <input id="q" name="q" type="search" value="{{ q }}" placeholder="Filename, SHA-256 or report ID">
+  <button class="btn" type="submit">Search</button>
+  {% if q %}<a href="{{ url_for('history') }}">Clear</a>{% endif %}
+</form>
+
+{% if records %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Report</th><th>File</th><th>Received</th><th>SHA-256</th><th>AI scores</th><th>Caution</th><th>Assessment</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for r in records %}
+  <tr>
+    <td><a href="{{ url_for('report', record_id=r.id) }}"><code>{{ r.id }}</code></a></td>
+    <td>{{ r.original_filename }}<br><span class="muted">{{ r.file_size|filesize }}</span></td>
+    <td>{{ r.uploaded_at|when }}</td>
+    <td><code class="hash" title="{{ r.sha256 }}">{{ r.sha256[:16] }}…</code></td>
+    <td>{% if r.ai_status == 'ok' %}{{ r.ai_prediction }}<br><span class="muted">AI {{ r.ai_score|pct }} · real {{ r.real_score|pct }}</span>
+        {% else %}<span class="muted">AI analysis unavailable</span>{% endif %}</td>
+    <td>{{ r.caution_score }}</td>
+    <td>{{ level_badge(r.summary_level) }}</td>
+    <td class="row-actions">
+      <a href="{{ url_for('analysis', record_id=r.id) }}">Results</a>
+      <form method="post" action="{{ url_for('delete', record_id=r.id) }}" data-confirm="Delete report {{ r.id }} and its stored files? This cannot be undone.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="link-danger">Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% elif q %}
+<p class="empty">No analyses match “{{ q }}”.</p>
+{% else %}
+<p class="empty">No analyses stored yet. <a href="{{ url_for('upload') }}">Upload an image</a> to create the first report.</p>
+{% endif %}
+{% endblock %}

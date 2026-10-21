@@ -1,0 +1,70 @@
+{% macro model_badge(s) -%}
+  {%- set labels = {'ready': 'AI model ready', 'loading': 'AI model loading…', 'not_loaded': 'AI model not loaded yet',
+                    'failed': 'AI model unavailable', 'disabled': 'AI detection disabled'} -%}
+  <span class="badge badge-{{ s.state }}" data-model-badge>{{ labels.get(s.state, s.state) }}</span>
+{%- endmacro %}
+
+{% macro level_badge(level) -%}
+  {%- set labels = {'review': 'Further review recommended', 'conflicting': 'Conflicting evidence',
+                    'no_strong_indicators': 'No strong indicators', 'limited': 'Limited (no AI result)'} -%}
+  <span class="badge level-{{ level }}">{{ labels.get(level, level) }}</span>
+{%- endmacro %}
+
+{% macro score_bar(label, value, kind) -%}
+  <div class="score">
+    <div class="score-head"><span>{{ label }}</span><strong>{{ value|pct }}</strong></div>
+    {% if value is not none %}
+    <div class="bar" role="progressbar" aria-label="{{ label }}" aria-valuemin="0" aria-valuemax="100"
+         aria-valuenow="{{ '%.1f'|format(value * 100) }}">
+      <div class="bar-fill bar-{{ kind }}" data-width="{{ '%.2f'|format(value * 100) }}"></div>
+    </div>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro ai_panel(ai, model) %}
+<section class="panel" aria-labelledby="ai-h">
+  <h2 id="ai-h">AI-generated image detection</h2>
+  {% if ai.status == 'ok' %}
+    <p class="prediction">Prediction: <strong>{{ ai.prediction_label }}</strong></p>
+    {% if ai.ai_score is not none %}
+      {{ score_bar('AI-generated score', ai.ai_score, 'ai') }}
+      {% if ai.real_score is not none %}{{ score_bar('Real-image score', ai.real_score, 'real') }}{% endif %}
+    {% else %}
+      <p class="alert alert-warn">{{ ai.message }}</p>
+    {% endif %}
+    <dl class="kv">
+      <dt>Model confidence</dt><dd>{{ ai.confidence_note }}</dd>
+      <dt>Decision rule</dt><dd>{{ ai.decision_rule }}</dd>
+      <dt>Model</dt><dd><code>{{ ai.model_id }}</code> ({{ ai.architecture }})</dd>
+      <dt>Revision</dt><dd><code>{{ ai.commit_hash or ai.revision }}</code></dd>
+      <dt>Raw output</dt>
+      <dd>
+        <table class="mini">
+          <thead><tr><th>Class</th><th>Label</th><th>Logit</th><th>Softmax</th></tr></thead>
+          <tbody>
+          {% for s in ai.scores %}
+            <tr><td>{{ s.index }}</td><td>{{ s.label }}</td><td>{{ '%.4f'|format(s.logit) }}</td><td>{{ '%.6f'|format(s.softmax) }}</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </dd>
+      <dt>Inference</dt><dd>{{ ai.inference_ms }} ms on CPU, input resized to {{ ai.model_input_size }}</dd>
+    </dl>
+    <div class="note">
+      <strong>How to read these scores.</strong> The two class scores come from one softmax and always sum to 100%;
+      they are not two independent measurements. {{ ai.score_note }} Model errors are possible in both directions.
+    </div>
+  {% else %}
+    <p class="alert alert-warn" role="status"><strong>AI analysis unavailable.</strong>
+      No AI prediction was produced for this image (status: {{ ai.status }}). {{ ai.message }}</p>
+    <p>Metadata, hashing and heuristic checks below were still performed.</p>
+  {% endif %}
+  {% if model and model.known_limitations %}
+  <details>
+    <summary>Known model limitations</summary>
+    <ul>{% for l in model.known_limitations %}<li>{{ l }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+</section>
+{% endmacro %}
